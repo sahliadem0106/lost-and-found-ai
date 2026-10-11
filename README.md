@@ -2,9 +2,9 @@
 
 **A child goes missing in a mall. A guard types a description of the child and the family. An agent follows the family across the security cameras, finds where the child was separated and where the child is now, and sends an alert with the video as proof.**
 
-### ▶ [Watch the step-by-step replay](https://sahliadem0106.github.io/newnew/)
+### ▶ [Watch the step-by-step replay](https://sahliadem0106.github.io/lost-and-found-ai/)
 
-[![The replay in Part 3: the map rings the clips sent to CreativAI, next to the exact prompts and CreativAI's answers word for word](docs/replay.png)](https://sahliadem0106.github.io/newnew/)
+[![The replay in Part 3: the map rings the clips sent to CreativAI, next to the exact prompts and CreativAI's answers word for word](docs/replay.png)](https://sahliadem0106.github.io/lost-and-found-ai/)
 
 The replay is a long, scrolling case study. The ground-floor camera map stays pinned on the left and animates as you scroll. **Part 1** shows what really happened (the family walking in, the boy slipping away in TechZone, his route to the food court, the lookalike family, the parents searching the wrong way). **Part 2** explains the Eyes: how the footage was indexed in CreativAI and the exact questions it is asked. **Part 3** is the agent's real run from the moment the parents reach the security desk: every map calculation, **every prompt sent to CreativAI and every answer, word for word**, and each decision. **Part 4** is the result. It runs in the browser with nothing to install; to run it locally, use `npm start` and open http://localhost:3000/replay.html.
 
@@ -118,8 +118,8 @@ Case A is a family of three arriving at 14:02. The boy (6, red t-shirt) leaves h
 You need **Node.js 18+**.
 
 ```bash
-git clone https://github.com/sahliadem0106/newnew.git
-cd newnew
+git clone https://github.com/sahliadem0106/lost-and-found-ai.git
+cd lost-and-found-ai
 npm run find:a      # the agent's full log in the terminal (uses cached CreativAI answers)
 npm start           # then open http://localhost:3000/replay.html (replay) or http://localhost:3000/?show=last (console)
 ```
