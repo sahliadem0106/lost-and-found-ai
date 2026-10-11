@@ -253,3 +253,9 @@ No free dataset contains a "lost child" story, so:
     - `/kling-video/v3.0/std/{text,image}-to-video` (`sound` off/on; `elements` = Kling element IDs)
   - Character references: `/kling-video/o3/image-reference` (Kling 3.0 Omni, `image_urls`, sound off by default)
   - Free price check: `POST /estimate/<endpoint>` with the same body. Uploads: `POST /files/generate-upload-url`, then a PUT to the presigned URL. Poll `status_url`.
+
+### Higgsfield key: final setup
+- The Higgsfield **network secret didn't work** (401 even after its host was changed to `api.higgsfield.ai`). The user replaced it with an **environment variable** `HIGGSFIELD_API_KEY` holding the whole `KEY_ID:KEY_SECRET` string.
+- Send it yourself: `Authorization: Key $HIGGSFIELD_API_KEY` to `https://api.higgsfield.ai`. Never print the key.
+- First call: `POST /estimate/...` (free) for Kling 3.0 Turbo / Std (sound off) / O3 image-reference and Soul V2. Then **generate the first character picture right away** (BOY_A). The user doesn't want a separate key test.
+- CreativAI stays a network secret on `ws.creativai-apis.com` (works; 2,500 credits).
