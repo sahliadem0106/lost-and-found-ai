@@ -94,7 +94,7 @@ No free dataset contains a "lost child" story, so:
 | **CCTV overlay tool** | Camera label + running clock on clips | ✅ `demo/cctv_overlay.sh` |
 | **Footage** | ~11 clips following the story timeline | ⏳ to film or generate |
 | **Ingest script** | Upload clips to CreativAI with `camera` + `start_time` tags, index them | ⏳ to build |
-| **Graph engine** | Neighbours, time windows, beam search, path plausibility | ⏳ to build (Python) |
+| **Graph engine** | Neighbours, time windows, beam search, path plausibility, separation finder, zone sweep | ✅ `demo/engine/` (tested with simulated Eyes; real CreativAI adapter ⏳) |
 | **Journey reel builder** | Cuts the matched segments and joins them with ffmpeg | ⏳ to build |
 | **Agent** | Claude + CreativAI MCP: runs the case, explains, writes the alert and report | ⏳ to build |
 | **Case dashboard** | The viewer, upgraded to show real results and clips | ⏳ to build |
@@ -207,6 +207,7 @@ No free dataset contains a "lost child" story, so:
 | `demo/camera-network.html` | Interactive viewer ([live](https://claude.ai/artifact/HVa3WZ1nZ6RJsJfK1hpYfL)) |
 | `demo/lost-and-found-mall-shotlist.md` | 11-clip shot list with prompts (Plan B / filming script for Plan A) |
 | `demo/graph-tracking-method.md` | Graph search method in detail |
+| `demo/engine/` | The Map + Brain loop in Python: `topology.py` (graph, walking windows), `tracker.py` (beam search, separation, zone sweep), `eyes.py` (Eyes interface + `SimEyes` from ground truth), `run_case.py`, `test_engine.py` |
 | `demo/cctv_overlay.sh` | Adds the camera label + clock to clips |
 | `concepts/system-architecture.md` | Why tracking + CreativAI; lookalike clothing; legal notes |
 | `concepts/lost-and-found.md`, `concepts/guardian-at-home.md` | Original concept docs (Guardian at Home is parked for later) |
@@ -220,9 +221,17 @@ No free dataset contains a "lost child" story, so:
 - ✅ Higgsfield auth is a **network secret** on host `platform.higgsfield.ai`: the proxy adds `Authorization: Key KEY_ID:KEY_SECRET` by itself, so call the API **without** an auth header and never read the key. Docs: https://docs.higgsfield.ai/docs/authentication. CreativAI will be set up the same way, on host `ws.creativai-apis.com` with the header `X-API-Key`. They also need to allow-list `higgsfield.ai` (and subdomains), `creativ-ai.com` and `creativai-apis.com` under Network access. `CREATIVAI_API_KEY` comes later.
 - **User's instruction: do NOT run a separate test call with the key.** The first API call is real work: generating the character pictures.
 
-### Blocker (session of 2026-10-11)
+### Blocker (sessions of 2026-10-11)
+- **Still blocked in the next session:** the network secret for `api.higgsfield.ai` is gone, but the first real call (`gen_characters.py FATHER_A`) still answered **401 "Invalid credentials"** with our `Authorization: Key KEY_ID:KEY_SECRET` header (format checked: 36-char id + 64-char secret, header matches the docs). So the key itself is likely wrong, revoked or from another account. **Fix (user):** create a new API key at Higgsfield and put `KEY_ID:KEY_SECRET` in `HIGGSFIELD_API_KEY`. Nothing was generated or charged.
 - `HIGGSFIELD_API_KEY` is now an env var (`KEY_ID:KEY_SECRET`, sent as `Authorization: Key $HIGGSFIELD_API_KEY`). But the agent proxy **also injects a credential on `api.higgsfield.ai`** (a network secret), and it overrides ours: every call answers **401 "Invalid credentials"**, both with our header and with no header. Nothing was generated or charged.
 - **Fix (user, in the environment settings):** either correct the Higgsfield network secret for `api.higgsfield.ai` (value `KEY_ID:KEY_SECRET`, header `Authorization: Key …`), or delete that network secret so the env-var header passes through. Then start a new session.
+
+### Done while blocked: graph engine (phase 2)
+- `python3 -m demo.engine.run_case A` runs the whole loop on Case A with **simulated Eyes** (answers from the ground truth in `mall_topology.json`): parents' path ENT-01 → … → INF-01, separation **STR-B 14:19:10**, child path STR-B → ATR-01 → COR-W → FC-01 → **FC-02** (still there). Both PASS.
+- `python3 -m unittest demo.engine.test_engine`: 8 tests, including 16 s segment hits (like CreativAI), a camera blind spot (two-hop jump) and the lookalike decoy at FC-01 being rejected by "is the child alone?".
+- The zone sweep covers every camera the child could reach in the time since separation (a fixed 3-hop radius missed FC-02).
+- **Case B stays sealed:** `run_case.py B` refuses without `--unseal`; no tuning on B.
+- Next for the engine: a `CreativAIEyes` class (same `search` / `ask` methods) once there is footage, mapping hits to absolute time with the `cam:` / `start:` tags.
 
 ### Next, in this order
 1. **Character pictures** (image credits, not video credits). Nano Banana is not in the API catalog, so the model is **Grok Image 2.0** (`xai/grok-imagine-image-2.0`, 2k, quality medium): text-to-image for the sheet, and it accepts up to 10 reference images for the front/back.
