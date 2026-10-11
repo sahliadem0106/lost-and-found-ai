@@ -217,14 +217,18 @@ No free dataset contains a "lost child" story, so:
 ## Current status & next step (for a new session)
 
 - ✅ Plan, camera map, two cases, trick clips, blind-test rule, all prompts (`demo/prompts/`).
-- ✅ Higgsfield auth is a **network secret** on host `platform.higgsfield.ai`: the proxy adds `Authorization: Key KEY_ID:KEY_SECRET` by itself, so call the API **without** an auth header and never read the key. Docs: https://docs.higgsfield.ai/docs/authentication. (A plain `HIGGSFIELD_API_KEY` env var was added earlier and should be removed.) CreativAI will be set up the same way, on host `ws.creativai-apis.com` with the header `X-API-Key`. They also need to allow-list `higgsfield.ai` (and subdomains), `creativ-ai.com` and `creativai-apis.com` under Network access. `CREATIVAI_API_KEY` comes later.
+- ✅ Higgsfield auth is a **network secret** on host `platform.higgsfield.ai`: the proxy adds `Authorization: Key KEY_ID:KEY_SECRET` by itself, so call the API **without** an auth header and never read the key. Docs: https://docs.higgsfield.ai/docs/authentication. CreativAI will be set up the same way, on host `ws.creativai-apis.com` with the header `X-API-Key`. They also need to allow-list `higgsfield.ai` (and subdomains), `creativ-ai.com` and `creativai-apis.com` under Network access. `CREATIVAI_API_KEY` comes later.
 - **User's instruction: do NOT run a separate test call with the key.** The first API call is real work: generating the character pictures.
 
+### Blocker (session of 2026-10-11)
+- `HIGGSFIELD_API_KEY` is now an env var (`KEY_ID:KEY_SECRET`, sent as `Authorization: Key $HIGGSFIELD_API_KEY`). But the agent proxy **also injects a credential on `api.higgsfield.ai`** (a network secret), and it overrides ours: every call answers **401 "Invalid credentials"**, both with our header and with no header. Nothing was generated or charged.
+- **Fix (user, in the environment settings):** either correct the Higgsfield network secret for `api.higgsfield.ai` (value `KEY_ID:KEY_SECRET`, header `Authorization: Key …`), or delete that network secret so the env-var header passes through. Then start a new session.
+
 ### Next, in this order
-1. **Character pictures** (image credits, not video credits). Model: **Nano Banana Pro** (`nano_banana_pro`, 2k).
-   - For each of the 7 characters in `demo/prompts/01-characters.md`, generate the **reference sheet** first (aspect 16:9).
-   - Then generate the **front** and **back** photos (aspect 2:3), passing the sheet as an `image_references` input, so all three show the same person.
-   - Save to `demo/assets/characters/<KEY>_{sheet,front,back}.png`, look at each one, and redo any that don't match the description.
+1. **Character pictures** (image credits, not video credits). Nano Banana is not in the API catalog, so the model is **Grok Image 2.0** (`xai/grok-imagine-image-2.0`, 2k, quality medium): text-to-image for the sheet, and it accepts up to 10 reference images for the front/back.
+   - Script ready: `python3 demo/gen_characters.py` (all 7) or `python3 demo/gen_characters.py FATHER_A` (one). Do Father A first and look at it before running the rest.
+   - For each of the 7 characters in `demo/prompts/01-characters.md`, it generates the **reference sheet** first (16:9), then the **front** and **back** photos (2:3) with the sheet passed in `image_urls`, so all three show the same person.
+   - Saves to `demo/assets/characters/<KEY>_{sheet,front,back}.png` + `log.json` (request ids and URLs; the URLs expire after 7 days). Look at each one and redo any that don't match (`--only front,back` reuses the sheet).
    - Commit and push, then show the user the pictures.
 2. **Ask the user's OK**, then generate **A1 + A3 only**. Model: **Kling 3.0 Omni** (`kling_o3_image_reference`, up to 7 reference images = our characters).
    - Settings: 16:9, 15 s, mode `std`, sound `off` (cheaper, audio not needed).
