@@ -259,3 +259,13 @@ No free dataset contains a "lost child" story, so:
 - Send it yourself: `Authorization: Key $HIGGSFIELD_API_KEY` to `https://api.higgsfield.ai`. Never print the key.
 - First call: `POST /estimate/...` (free) for Kling 3.0 Turbo / Std (sound off) / O3 image-reference and Soul V2. Then **generate the first character picture right away** (BOY_A). The user doesn't want a separate key test.
 - CreativAI stays a network secret on `ws.creativai-apis.com` (works; 2,500 credits).
+
+### Session 2026-10-11: models chosen and character sheets done
+- **API key works** (`HIGGSFIELD_API_KEY` user env var, `Authorization: Key …`). Full model list: `GET https://api.higgsfield.ai/models` (85 models). Free price check: `POST /estimate/<slug>` (16 credits = $1).
+- **Images: Qwen Image 3** (`alibaba/qwen-image-3/text-to-image`, ~0.64 credits/picture). Soul V2 (0.09 credits) can't draw young children (it gave an adult, then a teenager), so it's not used. Qwen gives 1280×720 for 16:9.
+- **All 7 character sheets are done:** `demo/assets/characters/<KEY>_sheet.png`. The `.url` files next to them hold the hosted image URL to pass as `image_urls`. GirlB's prompt needed "Saudi Arab girl" added (without it she came out East Asian).
+- **Front/back photos skipped for now:** the plan is to pass the sheets straight to the video model, and only make front photos if the first clip shows the model treating a 3-view sheet as 3 people.
+- **Video model: Kling O3 image-reference, mode std, sound off** (`kling-video/o3/image-reference`):
+  - **~1.14 credits per second** (5 s = 5.7, 15 s = 17.1 credits, about $1.07). Price doesn't depend on the number of reference images. Pro mode or sound on = 22.8 credits for 15 s.
+  - Compared (15 s unless noted): Grok Imagine 1.5 ref 19.7; Wan 2.7 ref 13.6 for 10 s max; Kling Omni ref 15.2 for 10 s max; Happy Horse 1.1 ref 36.7; Wan 3.0 ref $0.10/s at 720p. Seedance 2.x, MiniMax H3 and Wan 2.6 reference modes require a reference *video*, so they don't fit.
+  - Kling 3.0 Std text/image-to-video is cheaper (10.1 credits for 15 s) but takes only one start image, so it can't hold 2–3 characters consistent.
