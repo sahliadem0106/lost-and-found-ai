@@ -85,11 +85,6 @@ code, kbd { font-family: var(--mono); font-size: .9em; }
 .scripts td:first-child { font: 500 13.5px var(--mono); color: var(--fg); white-space: nowrap; }
 .scripts td:nth-child(2) { color: var(--fg); }
 .tablewrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
-.changes { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-left: 2px solid var(--line); }
-.changes li { position: relative; padding: 0 0 22px 26px; }
-.changes li::before { content: ""; position: absolute; left: -7px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--child); }
-.changes b { display: block; font: 600 19px var(--display); letter-spacing: .02em; }
-.changes p { margin: 2px 0 0; color: var(--muted); font-size: 15px; max-width: 80ch; }
 .numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
 .numbers div { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
 .numbers b { display: block; font: 600 32px/1.1 var(--display); }
@@ -294,7 +289,7 @@ footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(
   <header>
     <span class="eyebrow">Behind the replay</span>
     <h2>How it was built</h2>
-    <p class="intro">The whole project, end to end: how the footage was made, how CreativAI was used, what each script does, what changed along the way, <a href="#works">what works</a>, its <a href="#critique">limits and their fixes</a>, and what a real deployment would cost.</p>
+    <p class="intro">The whole project, end to end: how the footage was made, how CreativAI was used, what each script does, <a href="#works">what works</a>, its <a href="#critique">limits and their fixes</a>, and what a real deployment would cost.</p>
   </header>
 
   <div>
@@ -336,20 +331,6 @@ footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(
         <tr><td>replay.html</td><td>This page</td><td>Reads the agent's trace and animates it: every map state is plain data, and the map glides between states in either direction.</td></tr>
       </tbody>
     </table></div>
-  </div>
-
-  <div>
-    <h3>What changed along the way</h3>
-    <ol class="changes">
-      <li><b>Soul couldn't draw a child → Qwen Image 3</b><p>The first image model drew an adult, then a teenager, for "6-year-old boy". Qwen Image 3 got it right, so all character sheets use it.</p></li>
-      <li><b>Character sheets keep the family consistent</b><p>Kling O3 takes reference images, so every clip is generated from the same sheets. A prompt line tells it each sheet is one person seen from three angles.</p></li>
-      <li><b>Search alone wasn't enough → data plates</b><p>CreativAI search returns whole 16-second chunks with nearly identical scores for similar mall scenes, and can't say <i>when</i> something happens. Asking questions per clip with data plates gave accurate answers, including the second the boy walks away.</p></li>
-      <li><b>One bundled question hid the boy → separate questions</b><p>Asking about the child only "if the family is present" missed him when he was alone. The family and the child are now asked about separately.</p></li>
-      <li><b>CreativAI renames question columns → tolerant matching</b><p>Punctuation in the questions is changed in the stored column names, so answers are matched on letters and digits only.</p></li>
-      <li><b>Read the family's footage in time order</b><p>An ambiguous wide shot made the first run place the separation in the wrong camera. The rule "the first clip where the child walks away is the separation" fixed it. It was added after seeing case A, which is why a blind test on a second case was planned.</p></li>
-      <li><b>Two clips remade after review</b><p>The video generator added a second boy in red to the atrium clip and a person lying on a food counter. Both were regenerated with stricter prompts and camera placements that match the map, swapped in with replace-clip.js, and re-asked. Every answer is now correct.</p></li>
-      <li><b>Cache and trace</b><p>Every CreativAI answer is cached and every agent step is recorded, which is what makes this replay possible without calling any API.</p></li>
-    </ol>
   </div>
 
   <div>
