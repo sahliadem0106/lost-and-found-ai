@@ -598,7 +598,19 @@ function drawMarker(g, key, op, html) {
 
 // ================= motion: glide the story position towards the active step =================
 let pos = 0, motion = null;
-const ease = k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+// Gentle ease (sine in-out): peak speed is ~1.6x the average, so people walk rather than dash.
+const ease = k => -(Math.cos(Math.PI * k) - 1) / 2;
+// How long a glide takes: a calm base per step, plus time for the distance the dots actually walk.
+function glideMs(from, to) {
+  const lo = Math.max(0, Math.floor(Math.min(from, to))), hi = Math.min(states.length - 1, Math.ceil(Math.max(from, to)));
+  const A = states[lo], B = states[hi];
+  let walk = 0;
+  if (A.scen && B.scen) walk = Math.abs(B.scen.t - A.scen.t) * 2.6;                  // story minutes → walking time
+  const famLen = st => st.famK > 0 ? INV.fam.at[Math.min(st.famK, INV.fam.at.length) - 1] : 0;
+  const kidLen = st => st.sep ? INV.kid.at[Math.min(st.kidK, INV.kid.at.length - 1)] || 0 : 0;
+  walk = Math.max(walk, Math.abs(famLen(B) - famLen(A)) * 5, Math.abs(kidLen(B) - kidLen(A)) * 5); // map pixels
+  return Math.min(5200, 1700 + 500 * Math.min(Math.abs(to - from), 2) + Math.min(walk, 3000));
+}
 function glideTo(target) {
   if (Math.abs(target - pos) > 2.5 && !reduced) {
     // A big jump (contents link, fast scroll): fade the moving layers, cut next to the target, glide in.
@@ -610,7 +622,7 @@ function glideTo(target) {
   L.dynLow.style.opacity = L.dynHigh.style.opacity = 1;
   const from = pos, dist = Math.abs(target - from);
   if (dist < 1e-3) { render(pos); return; }
-  const dur = reduced ? 0 : Math.min(2600, 700 + 520 * Math.min(dist, 3.5));
+  const dur = reduced ? 0 : glideMs(from, target);
   const t0 = performance.now(), token = {};
   motion = token;
   const frame = () => {
