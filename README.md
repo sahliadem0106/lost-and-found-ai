@@ -98,14 +98,14 @@ Case A is a family of three arriving at 14:02. The boy (6, red t-shirt) leaves h
 | **Separation** | **TechZone (STR-B), 14:19:04** | STR-B; the boy walks off ~4 s into clip A3 | ✅ |
 | **Child now** | **Food court counters (FC-02), alone** | FC-02 | ✅ |
 | Lookalike family (A6) | ruled out: boy with adults | trick clip | ✅ |
-| Atrium sighting (A4) | ruled out (wrongly) | the boy crossing the atrium alone | ❌ |
+| Atrium sighting (A4) | ruled out | clip is flawed: two boys in red were generated | ⚠️ |
 
 **First run:** about 3 minutes and about 27 CreativAI credits. CreativAI was asked about 6 clips in 4 rounds. **Every rerun:** under 1 second and 0 credits, thanks to the cache.
 
 ### Honest limits
 
 - **The footage is AI-generated** (Kling via the Higgsfield API), not real CCTV. The clips don't always follow their script either: in A3 the boy leaves at about 4 s, not at the planned 9–13 s, and CreativAI correctly reported 4 s.
-- **A4 is a very wide atrium shot with tiny people and two kids in red,** and CreativAI said the boy was with his family there. The final answer is still right, but the child's path skips the atrium.
+- **Clip A4 is flawed:** the video generator put two boys in matching red outfits in a wide atrium shot. CreativAI matched one of them to nearby adults and said the boy was with his family, so the agent ruled the clip out. The final answer is still right, but the child's path skips the atrium.
 - **The time-order rule was added after seeing case A's answers.** A blind test on case B (clips generated but never run) was planned to check that the system generalises, and was **not run**. So these results show the method working on one case, not proof that it works in general.
 - **Search alone isn't enough.** CreativAI splits video into 16 s chunks, so a 15 s clip is one search hit with no timing, and similarity scores barely differ between similar mall scenes. That's why the Eyes use data-plate questions, not search ranking.
 
