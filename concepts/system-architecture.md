@@ -67,7 +67,7 @@ Black abayas and white thobes make single-person appearance matching weak. What 
 A note on "women near clothing shops": guessing where people go from their gender is a weak signal and gives biased results. Movement direction and time are much stronger and fair, so use those.
 
 ## Faces: legal side
-In Saudi Arabia, the Personal Data Protection Law (PDPL) treats **biometric data as sensitive**, and the UAE has similar rules. A mall-run face database needs a legal basis, notice, short retention and security. A safer design for the demo:
+Data-protection laws in the Gulf treat **biometric data as sensitive**. A mall-run face database needs a legal basis, notice, short retention and security. A safer design for the demo:
 - no stored faces of everyone
 - the **parents consent** at the security desk, and the system matches them against today's footage only
 - the case data is deleted when the case is closed

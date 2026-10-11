@@ -29,7 +29,7 @@ Each line is a walkway with a known length. That gives the minimum and maximum t
 
 Paste these descriptions **word for word** in every prompt. AI video won't keep faces identical between clips, but it keeps **clothing** well. That's also what a real system would use (see the method doc).
 
-- **[FATHER]** *a tall Saudi man in his 40s wearing a white thobe and a red-and-white checkered shemagh, black sandals, carrying a dark green shopping bag*
+- **[FATHER]** *a tall Gulf Arab man in his 40s wearing a white thobe and a red-and-white checkered shemagh, black sandals, carrying a dark green shopping bag*
 - **[MOTHER]** *a woman in a black abaya with a light grey headscarf, carrying a beige handbag*
 - **[BOY]** *a 6-year-old boy with short black hair in a bright red t-shirt, blue jeans and white sneakers*
 

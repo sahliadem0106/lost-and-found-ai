@@ -22,7 +22,7 @@ An agent loop joins them: the Map says where to look, the Eyes look, the Map mov
 When a child is reported missing, guards scroll through hours of footage from dozens of cameras. Two things make that slow:
 
 1. **They don't know where to look.** Every camera, every minute is a candidate.
-2. **Appearance alone is misleading.** In a Saudi mall, many men wear white thobes and many women wear black abayas. A search for "man in a white thobe" matches half the mall.
+2. **Appearance alone is misleading.** In a Gulf mall, many men wear white thobes and many women wear black abayas. A search for "man in a white thobe" matches half the mall.
 
 The camera graph fixes both. People walk along corridors at human speeds, so after one sighting, only a few cameras and a few minutes are physically possible. The system only looks there, which is faster and cheaper, and it rejects lookalikes who are in the wrong place at the wrong time.
 
