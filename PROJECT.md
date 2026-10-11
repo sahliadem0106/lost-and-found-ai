@@ -217,12 +217,20 @@ No free dataset contains a "lost child" story, so:
 ## Current status & next step (for a new session)
 
 - ✅ Plan, camera map, two cases, trick clips, blind-test rule, all prompts (`demo/prompts/`).
-- ⏳ **Access being set up by the user:**
-  - environment secrets `HIGGSFIELD_API_KEY` (plus `HIGGSFIELD_API_SECRET` if Higgsfield issues two values) and `CREATIVAI_API_KEY`;
-  - network allow-list for `higgsfield.ai` (incl. its API/CDN subdomains), `creativ-ai.com` and `creativai-apis.com`.
-- **Next:**
-  1. Check both APIs answer.
-  2. Generate the 7 character pictures.
-  3. Generate **A1 + A3 only**, confirming the cost with the user first.
-  4. Run the early CreativAI test.
-- **Budget rule:** at most **15 videos** in total. Always ask the user before each paid batch.
+- ✅ The user added the environment secret `HIGGSFIELD_API_KEY`. They also need to allow-list `higgsfield.ai` (and subdomains), `creativ-ai.com` and `creativai-apis.com` under Network access. `CREATIVAI_API_KEY` comes later.
+- **User's instruction: do NOT run a separate test call with the key.** The first API call is real work: generating the character pictures.
+
+### Next, in this order
+1. **Character pictures** (image credits, not video credits). Model: **Nano Banana Pro** (`nano_banana_pro`, 2k).
+   - For each of the 7 characters in `demo/prompts/01-characters.md`, generate the **reference sheet** first (aspect 16:9).
+   - Then generate the **front** and **back** photos (aspect 2:3), passing the sheet as an `image_references` input, so all three show the same person.
+   - Save to `demo/assets/characters/<KEY>_{sheet,front,back}.png`, look at each one, and redo any that don't match the description.
+   - Commit and push, then show the user the pictures.
+2. **Ask the user's OK**, then generate **A1 + A3 only**. Model: **Kling 3.0 Omni** (`kling_o3_image_reference`, up to 7 reference images = our characters).
+   - Settings: 16:9, 15 s, mode `std`, sound `off` (cheaper, audio not needed).
+   - Use the prompt text from `02-clips-case-A.md`. Replace the `@Tag` mentions by referring to the reference images in order, e.g. "the father is the man in image 1".
+   - Save to `demo/raw/case-A/`.
+3. Early CreativAI test on A1 + A3 (needs `CREATIVAI_API_KEY`).
+4. The rest, in the order in `demo/prompts/README.md`.
+
+**Budget rule:** at most **15 videos** in total, and ask the user before every paid video batch. The Higgsfield connector showed a free web account with 10 credits; the user says the API key's account holds the paid credit. Check the balance through the API before the first video.
