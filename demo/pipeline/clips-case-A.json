@@ -1,0 +1,11 @@
+{
+  "collection_name": "lost-found-case-a",
+  "clips": [
+    { "id": "A1", "file": "demo/raw/case-A/A1.mp4", "camera": "ENT-01", "start": "14:02:00" },
+    { "id": "A2", "file": "demo/raw/case-A/A2.mp4", "camera": "STR-A",  "start": "14:08:00" },
+    { "id": "A3", "file": "demo/raw/case-A/A3.mp4", "camera": "STR-B",  "start": "14:19:00" },
+    { "id": "A4", "file": "demo/raw/case-A/A4.mp4", "camera": "ATR-01", "start": "14:19:50" },
+    { "id": "A5", "file": "demo/raw/case-A/A5.mp4", "camera": "FC-02",  "start": "14:22:50" },
+    { "id": "A6", "file": "demo/raw/case-A/A6.mp4", "camera": "FC-01",  "start": "14:24:00" }
+  ]
+}

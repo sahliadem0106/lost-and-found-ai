@@ -269,3 +269,14 @@ No free dataset contains a "lost child" story, so:
   - **~1.14 credits per second** (5 s = 5.7, 15 s = 17.1 credits, about $1.07). Price doesn't depend on the number of reference images. Pro mode or sound on = 22.8 credits for 15 s.
   - Compared (15 s unless noted): Grok Imagine 1.5 ref 19.7; Wan 2.7 ref 13.6 for 10 s max; Kling Omni ref 15.2 for 10 s max; Happy Horse 1.1 ref 36.7; Wan 3.0 ref $0.10/s at 720p. Seedance 2.x, MiniMax H3 and Wan 2.6 reference modes require a reference *video*, so they don't fit.
   - Kling 3.0 Std text/image-to-video is cheaper (10.1 credits for 15 s) but takes only one start image, so it can't hold 2–3 characters consistent.
+
+### Session 2026-10-11 (later): case A clips, CreativAI ingest, first searches
+- **All 14 clips generated** (A1–A8, B1–B6) for $14.11 in total; the user approved case A. Clips are local in `demo/raw/` (not committed, ~130 MB). Case B is untouched (blind test).
+- **CreativAI key works** (`CREATIVAI_API_KEY` user env var, header `X-API-Key`, base `https://ws.creativai-apis.com/api/v2`, full spec at `/openapi.json`). 2,500 credits, free plan.
+- **Ingest done** with `demo/pipeline/ingest.js` + `clips-case-A.json`: collection `lostfoundcasea_d47c1295`, A1–A6 tagged `camera:<id>` and `clip:<id>`, metadata `camera`, `start_time`, `start_sec`. Indexing cost 10 credits and took ~3 min.
+- **Answers to the "first checks" in section 5:**
+  1. Hits return the clip, but **CreativAI cuts videos into 16 s chunks, so a 15 s clip is one chunk**: every hit is "0–15 s", with no second inside the clip. Exact timing has to come from data plates / agentic chat, not search.
+  2. **Filtering by camera works**: `tags: ["camera:fc-01", ...]` limits results to those cameras.
+  3. Indexing 6 × 15 s took ~3 min.
+  4. Image queries need a `multimodal` collection (ours is `video_only`).
+- **Search ranking is weak on these clips:** scores are rank-fusion values (~0.030–0.033) that barely differ, and the default `min_score` hides everything (pass `min_score: 0`). Q1 (family arriving): A1 #2. Q3 (separation): A3 #2. Q4 (boy alone): A4 #5, A5 #4, so it fails top-3. Search alone can't be the Eyes; it can only narrow down by camera tag, and yes/no questions per clip need data plates or agentic chat.
