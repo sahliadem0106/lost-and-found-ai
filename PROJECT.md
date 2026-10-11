@@ -217,7 +217,7 @@ No free dataset contains a "lost child" story, so:
 ## Current status & next step (for a new session)
 
 - ✅ Plan, camera map, two cases, trick clips, blind-test rule, all prompts (`demo/prompts/`).
-- ✅ The user added the environment secret `HIGGSFIELD_API_KEY`. They also need to allow-list `higgsfield.ai` (and subdomains), `creativ-ai.com` and `creativai-apis.com` under Network access. `CREATIVAI_API_KEY` comes later.
+- ✅ Higgsfield auth is a **network secret** on host `platform.higgsfield.ai`: the proxy adds `Authorization: Key KEY_ID:KEY_SECRET` by itself, so call the API **without** an auth header and never read the key. Docs: https://docs.higgsfield.ai/docs/authentication. (A plain `HIGGSFIELD_API_KEY` env var was added earlier and should be removed.) CreativAI will be set up the same way, on host `ws.creativai-apis.com` with the header `X-API-Key`. They also need to allow-list `higgsfield.ai` (and subdomains), `creativ-ai.com` and `creativai-apis.com` under Network access. `CREATIVAI_API_KEY` comes later.
 - **User's instruction: do NOT run a separate test call with the key.** The first API call is real work: generating the character pictures.
 
 ### Next, in this order
