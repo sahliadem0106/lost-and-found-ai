@@ -200,6 +200,7 @@ No free dataset contains a "lost child" story, so:
 | Path | What |
 |---|---|
 | `PROJECT.md` | This plan |
+| `demo/higgsfield-guide.html` | Step-by-step guide for making the assets by hand on Higgsfield, all prompts with copy buttons ([live](https://claude.ai/artifact/2UCuPttKj1FBbY3KbqhMBr)) |
 | `demo/prompts/` | **Every prompt to generate**: characters, Case A, Case B (blind test), extras, negative prompt, CreativAI questions |
 | `demo/test-plan.md` | Two cases + trick clips + the blind-test rule |
 | `demo/game-plan.html` | Game plan page with copy buttons ([live](https://claude.ai/artifact/2jrYuhKgMx3jxgKuhXANSf)) |
@@ -233,7 +234,12 @@ No free dataset contains a "lost child" story, so:
 - **Case B stays sealed:** `run_case.py B` refuses without `--unseal`; no tuning on B.
 - Next for the engine: a `CreativAIEyes` class (same `search` / `ask` methods) once there is footage, mapping hits to absolute time with the `cam:` / `start:` tags.
 
-### Next, in this order
+### Decision (2026-10-11): the user makes all pictures and videos by hand on the Higgsfield website
+- Guide with every prompt and copy buttons: `demo/higgsfield-guide.html` ([live](https://claude.ai/artifact/2UCuPttKj1FBbY3KbqhMBr)), built by `python3 demo/prompts/build_guide.py`.
+- The API route below (`gen_characters.py`, API keys) is no longer needed for assets.
+- The user uploads files to `demo/raw/case-A/`, `demo/raw/case-B/` and `demo/assets/characters/`, or attaches them in chat. Next for Claude: when A1 + A3 arrive, run the early CreativAI test.
+
+### Next (old API plan, kept for reference)
 1. **Character pictures** (image credits, not video credits). Nano Banana is not in the API catalog, so the model is **Grok Image 2.0** (`xai/grok-imagine-image-2.0`, 2k, quality medium): text-to-image for the sheet, and it accepts up to 10 reference images for the front/back.
    - Script ready: `python3 demo/gen_characters.py` (all 7) or `python3 demo/gen_characters.py FATHER_A` (one). Do Father A first and look at it before running the rest.
    - For each of the 7 characters in `demo/prompts/01-characters.md`, it generates the **reference sheet** first (16:9), then the **front** and **back** photos (2:3) with the sheet passed in `image_urls`, so all three show the same person.

@@ -1,0 +1,745 @@
+<title>Higgsfield Production Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column, like a production call sheet; each step is a numbered block,
+   every prompt sits in a mono box with its copy button. Accent = CCTV timestamp amber. */
+:root {
+  --bg: #f3f4f6; --panel: #ffffff; --ink: #1b2330; --muted: #5b6577; --line: #d9dde4;
+  --accent: #b86e00; --accent-soft: #fff3df; --code: #eef0f4; --ok: #2f7d4f; --warn: #a33a2b;
+  --f-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --f-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161d; --panel: #1a2029; --ink: #e5e9f0; --muted: #98a2b3; --line: #2c3440;
+  --accent: #f0a63a; --accent-soft: #2a2215; --code: #0e1218; --ok: #6cc391; --warn: #f08a7a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161d; --panel: #1a2029; --ink: #e5e9f0; --muted: #98a2b3; --line: #2c3440;
+  --accent: #f0a63a; --accent-soft: #2a2215; --code: #0e1218; --ok: #6cc391; --warn: #f08a7a; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font: 16px/1.6 var(--f-body); }
+.wrap { max-width: 52rem; margin: 0 auto; padding-inline: 16px; padding-block: 2rem 4rem; }
+header .eyebrow { font: 600 .8rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 700 clamp(2.2rem, 6vw, 3.4rem)/1 var(--f-display); letter-spacing: .01em; margin: .3rem 0 .8rem; text-wrap: balance; }
+h2 { font: 700 1.75rem/1.1 var(--f-display); margin: 0; text-wrap: balance; }
+h3 { font: 600 1.15rem/1.2 var(--f-display); letter-spacing: .02em; text-transform: uppercase; color: var(--muted); margin: 1.6rem 0 .5rem; }
+h4 { font: 600 1rem var(--f-body); margin: 1.2rem 0 .4rem; }
+h4 small { font: 400 .8rem var(--f-mono); color: var(--muted); margin-left: .4rem; }
+p, li { max-width: 65ch; }
+a { color: var(--accent); }
+code { font: .85em var(--f-mono); background: var(--code); padding: .1em .35em; border-radius: 3px; overflow-wrap: anywhere; }
+.lead { font-size: 1.1rem; color: var(--muted); }
+.steps { display: grid; gap: 1.25rem; margin-top: 2rem; }
+.step { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1.25rem 1.25rem 1.5rem; min-width: 0; }
+.step-head { display: flex; gap: .9rem; align-items: baseline; flex-wrap: wrap; }
+.num { font: 700 1rem var(--f-mono); color: var(--accent); }
+.meta { font: .8rem var(--f-mono); color: var(--muted); }
+.stop { border-left: 4px solid var(--warn); background: var(--accent-soft); padding: .8rem 1rem; border-radius: 0 4px 4px 0; margin-top: 1rem; }
+.stop strong { color: var(--warn); }
+.settings { display: grid; grid-template-columns: max-content 1fr; gap: .3rem 1rem; margin: .6rem 0; font-size: .95rem; }
+.settings dt { font: 500 .85rem var(--f-mono); color: var(--muted); padding-top: .1rem; }
+.settings dd { margin: 0; min-width: 0; }
+.item { border-top: 1px solid var(--line); }
+.item:last-of-type { border-bottom: 1px solid var(--line); }
+.item summary { cursor: pointer; padding: .75rem 0; display: flex; flex-wrap: wrap; gap: .3rem .7rem; align-items: baseline; }
+.item summary:focus-visible, .copy:focus-visible, .tick input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.item[open] summary { color: var(--accent); }
+.what { font-weight: 600; }
+.files { font: .78rem var(--f-mono); color: var(--muted); overflow-wrap: anywhere; }
+.tag, .cid { font: 500 .85rem var(--f-mono); background: var(--accent-soft); color: var(--accent); padding: .05em .4em; border-radius: 3px; }
+.prompt { position: relative; margin: .3rem 0 .5rem; }
+.prompt pre { margin: 0; background: var(--code); border: 1px solid var(--line); border-radius: 4px; padding: .8rem 1rem 2.6rem;
+  font: .82rem/1.55 var(--f-mono); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 20rem; overflow: auto; }
+.copy { position: absolute; right: .5rem; bottom: .5rem; font: 600 .8rem var(--f-body); background: var(--accent); color: var(--panel);
+  border: 0; border-radius: 4px; padding: .35rem .8rem; cursor: pointer; }
+.copy.done { background: var(--ok); }
+.save { font-size: .9rem; color: var(--muted); margin: .2rem 0; }
+.why, .note { color: var(--muted); font-style: italic; }
+.tick { display: flex; gap: .5rem; align-items: center; margin: 1rem 0 .8rem; font-weight: 600; }
+.tick input { width: 1.1rem; height: 1.1rem; accent-color: var(--ok); }
+.check li { margin: .2rem 0; }
+.foot { margin-top: 2.5rem; font-size: .85rem; color: var(--muted); }
+@media (max-width: 30rem) { .settings { grid-template-columns: 1fr; } .settings dd { margin-bottom: .4rem; } }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Lost &amp; Found · asset production</div>
+  <h1>Making the pictures and videos on Higgsfield</h1>
+  <p class="lead">Every prompt you need, in the order to use it. Open a step, press <b>Copy</b>, paste it into Higgsfield.
+  Tick the boxes as you go; they're remembered in this browser.</p>
+</header>
+
+<div class="steps">
+
+<section class="step" id="s0">
+  <div class="step-head"><span class="num">STEP 0</span><h2>Before you start</h2></div>
+  <ul>
+    <li>Log in at <a href="https://higgsfield.ai" target="_blank" rel="noopener">higgsfield.ai</a> and check your credits (top right). Pictures are cheap; each 15-second video costs about 30 credits at 720p.</li>
+    <li>Make a folder on your computer called <code>lost-and-found</code> and save every file there with the exact name this page gives. The names matter: the system reads the camera and clip from them.</li>
+    <li>Higgsfield changes its menus often. If a button has a slightly different name than here, look for the closest match.</li>
+  </ul>
+</section>
+
+<section class="step" id="s1">
+  <div class="step-head"><span class="num">STEP 1</span><h2>Character pictures</h2><span class="meta">6 characters × 3 pictures · image credits only</span></div>
+  <p>Go to <b>Image</b> and pick <b>Nano Banana Pro</b> (if you don't have it, use <b>Soul</b>). For each character, make the three pictures in this order:</p>
+  <ol>
+    <li><b>Reference sheet</b>: aspect ratio <b>16:9</b>, no reference image. Generate 2–4 versions and keep the best one.</li>
+    <li><b>Front photo</b>: aspect ratio <b>3:4</b>. Upload the sheet you just saved as the <b>reference image</b>, so it's the same person.</li>
+    <li><b>Back photo</b>: same as the front, with the sheet as the reference image.</li>
+  </ol>
+  <p>Redo a picture if the clothes colour is wrong, there's text or a logo, or the front/back don't look like the sheet.</p>
+  <h3>Case A family</h3>
+  
+<details class="item" id="char-FATHER_A">
+  <summary><span class="tag">@FatherA</span> <span class="what">Father (case A)</span>
+    <span class="files">FATHER_A_sheet.png · FATHER_A_front.png · FATHER_A_back.png</span></summary>
+  
+  <h4>1 · Reference sheet <small>aspect 16:9 · no reference image</small></h4>
+  <div class="prompt"><pre id="p1">Photorealistic full-body character reference sheet of a tall, slim Saudi man in his early 40s with a short, neatly trimmed black beard, wearing a crisp ankle-length white thobe, a red-and-white checkered shemagh held by a black agal, black leather sandals and a silver wristwatch, carrying a dark green paper shopping bag with rope handles in his right hand. Three views of the same person side by side on one image: front view, left side view, back view. Standing straight, arms relaxed, neutral expression, the whole body visible from head to shoes. Plain light grey studio background, soft even lighting, no shadows on the background, sharp focus, natural skin texture, realistic fabric folds. No text, no logos, no props other than those described.</pre><button type="button" class="copy" data-target="p1">Copy</button></div>
+  <p class="save">Save as <code>FATHER_A_sheet.png</code></p>
+  <h4>2 · Front photo <small>aspect 3:4 · attach FATHER_A_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p2">Photorealistic full-body photo of a tall, slim Saudi man in his early 40s with a short, neatly trimmed black beard, wearing a crisp ankle-length white thobe, a red-and-white checkered shemagh held by a black agal, black leather sandals and a silver wristwatch, carrying a dark green paper shopping bag with rope handles in his right hand, facing the camera, standing on a plain light grey studio background. Head to shoes in frame, soft even lighting, neutral expression, realistic fabric and skin detail, sharp focus. No text, no logos.</pre><button type="button" class="copy" data-target="p2">Copy</button></div>
+  <p class="save">Save as <code>FATHER_A_front.png</code></p>
+  <h4>3 · Back photo <small>aspect 3:4 · attach FATHER_A_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p3">Photorealistic full-body photo of a tall, slim Saudi man in his early 40s with a short, neatly trimmed black beard, wearing a crisp ankle-length white thobe, a red-and-white checkered shemagh held by a black agal, black leather sandals and a silver wristwatch, carrying a dark green paper shopping bag with rope handles in his right hand, seen from behind and slightly to the side, walking away, on a plain light grey studio background. Head to shoes in frame, soft even lighting, realistic fabric detail. No text, no logos.</pre><button type="button" class="copy" data-target="p3">Copy</button></div>
+  <p class="save">Save as <code>FATHER_A_back.png</code></p>
+  <label class="tick"><input type="checkbox" id="ck-char-FATHER_A"> <span>All three pictures show the same person in the same clothes</span></label>
+</details>
+<details class="item" id="char-MOTHER_A">
+  <summary><span class="tag">@MotherA</span> <span class="what">Mother (case A)</span>
+    <span class="files">MOTHER_A_sheet.png · MOTHER_A_front.png · MOTHER_A_back.png</span></summary>
+  
+  <h4>1 · Reference sheet <small>aspect 16:9 · no reference image</small></h4>
+  <div class="prompt"><pre id="p4">Photorealistic full-body character reference sheet of a Saudi woman in her mid-30s wearing a plain loose black abaya, a light grey hijab framing her face, black flat shoes, and a beige leather handbag on her left shoulder. Three views of the same person side by side on one image: front view, left side view, back view. Standing straight, arms relaxed, neutral expression, the whole body visible from head to shoes. Plain light grey studio background, soft even lighting, no shadows on the background, sharp focus, natural skin texture, realistic fabric folds. No text, no logos, no props other than those described.</pre><button type="button" class="copy" data-target="p4">Copy</button></div>
+  <p class="save">Save as <code>MOTHER_A_sheet.png</code></p>
+  <h4>2 · Front photo <small>aspect 3:4 · attach MOTHER_A_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p5">Photorealistic full-body photo of a Saudi woman in her mid-30s wearing a plain loose black abaya, a light grey hijab framing her face, black flat shoes, and a beige leather handbag on her left shoulder, facing the camera, standing on a plain light grey studio background. Head to shoes in frame, soft even lighting, neutral expression, realistic fabric and skin detail, sharp focus. No text, no logos.</pre><button type="button" class="copy" data-target="p5">Copy</button></div>
+  <p class="save">Save as <code>MOTHER_A_front.png</code></p>
+  <h4>3 · Back photo <small>aspect 3:4 · attach MOTHER_A_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p6">Photorealistic full-body photo of a Saudi woman in her mid-30s wearing a plain loose black abaya, a light grey hijab framing her face, black flat shoes, and a beige leather handbag on her left shoulder, seen from behind and slightly to the side, walking away, on a plain light grey studio background. Head to shoes in frame, soft even lighting, realistic fabric detail. No text, no logos.</pre><button type="button" class="copy" data-target="p6">Copy</button></div>
+  <p class="save">Save as <code>MOTHER_A_back.png</code></p>
+  <label class="tick"><input type="checkbox" id="ck-char-MOTHER_A"> <span>All three pictures show the same person in the same clothes</span></label>
+</details>
+<details class="item" id="char-BOY_A">
+  <summary><span class="tag">@BoyA</span> <span class="what">Boy (case A)</span>
+    <span class="files">BOY_A_sheet.png · BOY_A_front.png · BOY_A_back.png</span></summary>
+  
+  <h4>1 · Reference sheet <small>aspect 16:9 · no reference image</small></h4>
+  <div class="prompt"><pre id="p7">Photorealistic full-body character reference sheet of a small 6-year-old boy with short black hair, wearing a plain bright red crew-neck t-shirt with no logo, mid-blue jeans and white sneakers. Three views of the same person side by side on one image: front view, left side view, back view. Standing straight, arms relaxed, neutral expression, the whole body visible from head to shoes. Plain light grey studio background, soft even lighting, no shadows on the background, sharp focus, natural skin texture, realistic fabric folds. No text, no logos, no props other than those described.</pre><button type="button" class="copy" data-target="p7">Copy</button></div>
+  <p class="save">Save as <code>BOY_A_sheet.png</code></p>
+  <h4>2 · Front photo <small>aspect 3:4 · attach BOY_A_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p8">Photorealistic full-body photo of a small 6-year-old boy with short black hair, wearing a plain bright red crew-neck t-shirt with no logo, mid-blue jeans and white sneakers, facing the camera, standing on a plain light grey studio background. Head to shoes in frame, soft even lighting, neutral expression, realistic fabric and skin detail, sharp focus. No text, no logos.</pre><button type="button" class="copy" data-target="p8">Copy</button></div>
+  <p class="save">Save as <code>BOY_A_front.png</code></p>
+  <h4>3 · Back photo <small>aspect 3:4 · attach BOY_A_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p9">Photorealistic full-body photo of a small 6-year-old boy with short black hair, wearing a plain bright red crew-neck t-shirt with no logo, mid-blue jeans and white sneakers, seen from behind and slightly to the side, walking away, on a plain light grey studio background. Head to shoes in frame, soft even lighting, realistic fabric detail. No text, no logos.</pre><button type="button" class="copy" data-target="p9">Copy</button></div>
+  <p class="save">Save as <code>BOY_A_back.png</code></p>
+  <label class="tick"><input type="checkbox" id="ck-char-BOY_A"> <span>All three pictures show the same person in the same clothes</span></label>
+</details>
+  <h3>Case B family</h3>
+  
+<details class="item" id="char-FATHER_B">
+  <summary><span class="tag">@FatherB</span> <span class="what">Father (case B)</span>
+    <span class="files">FATHER_B_sheet.png · FATHER_B_front.png · FATHER_B_back.png</span></summary>
+  
+  <h4>1 · Reference sheet <small>aspect 16:9 · no reference image</small></h4>
+  <div class="prompt"><pre id="p10">Photorealistic full-body character reference sheet of a Saudi man in his mid-30s of average build with a full dark beard, wearing a light grey ankle-length thobe, a plain white ghutra held by a black agal, brown leather sandals, and a black backpack on one shoulder. Three views of the same person side by side on one image: front view, left side view, back view. Standing straight, arms relaxed, neutral expression, the whole body visible from head to shoes. Plain light grey studio background, soft even lighting, no shadows on the background, sharp focus, natural skin texture, realistic fabric folds. No text, no logos, no props other than those described.</pre><button type="button" class="copy" data-target="p10">Copy</button></div>
+  <p class="save">Save as <code>FATHER_B_sheet.png</code></p>
+  <h4>2 · Front photo <small>aspect 3:4 · attach FATHER_B_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p11">Photorealistic full-body photo of a Saudi man in his mid-30s of average build with a full dark beard, wearing a light grey ankle-length thobe, a plain white ghutra held by a black agal, brown leather sandals, and a black backpack on one shoulder, facing the camera, standing on a plain light grey studio background. Head to shoes in frame, soft even lighting, neutral expression, realistic fabric and skin detail, sharp focus. No text, no logos.</pre><button type="button" class="copy" data-target="p11">Copy</button></div>
+  <p class="save">Save as <code>FATHER_B_front.png</code></p>
+  <h4>3 · Back photo <small>aspect 3:4 · attach FATHER_B_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p12">Photorealistic full-body photo of a Saudi man in his mid-30s of average build with a full dark beard, wearing a light grey ankle-length thobe, a plain white ghutra held by a black agal, brown leather sandals, and a black backpack on one shoulder, seen from behind and slightly to the side, walking away, on a plain light grey studio background. Head to shoes in frame, soft even lighting, realistic fabric detail. No text, no logos.</pre><button type="button" class="copy" data-target="p12">Copy</button></div>
+  <p class="save">Save as <code>FATHER_B_back.png</code></p>
+  <label class="tick"><input type="checkbox" id="ck-char-FATHER_B"> <span>All three pictures show the same person in the same clothes</span></label>
+</details>
+<details class="item" id="char-MOTHER_B">
+  <summary><span class="tag">@MotherB</span> <span class="what">Mother (case B)</span>
+    <span class="files">MOTHER_B_sheet.png · MOTHER_B_front.png · MOTHER_B_back.png</span></summary>
+  
+  <h4>1 · Reference sheet <small>aspect 16:9 · no reference image</small></h4>
+  <div class="prompt"><pre id="p13">Photorealistic full-body character reference sheet of a Saudi woman wearing a black abaya with dark navy embroidery along the sleeves and hem, a black hijab and black niqab, with a grey baby stroller carrying a baby under a white blanket. Three views of the same person side by side on one image: front view, left side view, back view. Standing straight, arms relaxed, neutral expression, the whole body visible from head to shoes. Plain light grey studio background, soft even lighting, no shadows on the background, sharp focus, natural skin texture, realistic fabric folds. No text, no logos, no props other than those described.</pre><button type="button" class="copy" data-target="p13">Copy</button></div>
+  <p class="save">Save as <code>MOTHER_B_sheet.png</code></p>
+  <h4>2 · Front photo <small>aspect 3:4 · attach MOTHER_B_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p14">Photorealistic full-body photo of a Saudi woman wearing a black abaya with dark navy embroidery along the sleeves and hem, a black hijab and black niqab, with a grey baby stroller carrying a baby under a white blanket, facing the camera, standing on a plain light grey studio background. Head to shoes in frame, soft even lighting, neutral expression, realistic fabric and skin detail, sharp focus. No text, no logos.</pre><button type="button" class="copy" data-target="p14">Copy</button></div>
+  <p class="save">Save as <code>MOTHER_B_front.png</code></p>
+  <h4>3 · Back photo <small>aspect 3:4 · attach MOTHER_B_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p15">Photorealistic full-body photo of a Saudi woman wearing a black abaya with dark navy embroidery along the sleeves and hem, a black hijab and black niqab, with a grey baby stroller carrying a baby under a white blanket, seen from behind and slightly to the side, walking away, on a plain light grey studio background. Head to shoes in frame, soft even lighting, realistic fabric detail. No text, no logos.</pre><button type="button" class="copy" data-target="p15">Copy</button></div>
+  <p class="save">Save as <code>MOTHER_B_back.png</code></p>
+  <label class="tick"><input type="checkbox" id="ck-char-MOTHER_B"> <span>All three pictures show the same person in the same clothes</span></label>
+</details>
+<details class="item" id="char-GIRL_B">
+  <summary><span class="tag">@GirlB</span> <span class="what">Girl (case B)</span>
+    <span class="files">GIRL_B_sheet.png · GIRL_B_front.png · GIRL_B_back.png</span></summary>
+  
+  <h4>1 · Reference sheet <small>aspect 16:9 · no reference image</small></h4>
+  <div class="prompt"><pre id="p16">Photorealistic full-body character reference sheet of a 7-year-old girl with long black hair in a high ponytail tied with a yellow hair tie, wearing a bright yellow hoodie, light pink leggings and white sneakers, holding a small purple plush bunny. Three views of the same person side by side on one image: front view, left side view, back view. Standing straight, arms relaxed, neutral expression, the whole body visible from head to shoes. Plain light grey studio background, soft even lighting, no shadows on the background, sharp focus, natural skin texture, realistic fabric folds. No text, no logos, no props other than those described.</pre><button type="button" class="copy" data-target="p16">Copy</button></div>
+  <p class="save">Save as <code>GIRL_B_sheet.png</code></p>
+  <h4>2 · Front photo <small>aspect 3:4 · attach GIRL_B_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p17">Photorealistic full-body photo of a 7-year-old girl with long black hair in a high ponytail tied with a yellow hair tie, wearing a bright yellow hoodie, light pink leggings and white sneakers, holding a small purple plush bunny, facing the camera, standing on a plain light grey studio background. Head to shoes in frame, soft even lighting, neutral expression, realistic fabric and skin detail, sharp focus. No text, no logos.</pre><button type="button" class="copy" data-target="p17">Copy</button></div>
+  <p class="save">Save as <code>GIRL_B_front.png</code></p>
+  <h4>3 · Back photo <small>aspect 3:4 · attach GIRL_B_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p18">Photorealistic full-body photo of a 7-year-old girl with long black hair in a high ponytail tied with a yellow hair tie, wearing a bright yellow hoodie, light pink leggings and white sneakers, holding a small purple plush bunny, seen from behind and slightly to the side, walking away, on a plain light grey studio background. Head to shoes in frame, soft even lighting, realistic fabric detail. No text, no logos.</pre><button type="button" class="copy" data-target="p18">Copy</button></div>
+  <p class="save">Save as <code>GIRL_B_back.png</code></p>
+  <label class="tick"><input type="checkbox" id="ck-char-GIRL_B"> <span>All three pictures show the same person in the same clothes</span></label>
+</details>
+  <h3>Optional</h3>
+  
+<details class="item" id="char-GUARD">
+  <summary><span class="tag">@Guard</span> <span class="what">Security guard (both cases)</span>
+    <span class="files">GUARD_sheet.png · GUARD_front.png · GUARD_back.png</span></summary>
+  <p class="note">Only needed for the extra clips A7 and A8. Skip it for now.</p>
+  <h4>1 · Reference sheet <small>aspect 16:9 · no reference image</small></h4>
+  <div class="prompt"><pre id="p19">Photorealistic full-body character reference sheet of a male mall security guard in his 30s wearing a dark navy security uniform jacket over a light blue shirt, black trousers, black shoes, a black walkie-talkie clipped to his chest and an ID badge. Three views of the same person side by side on one image: front view, left side view, back view. Standing straight, arms relaxed, neutral expression, the whole body visible from head to shoes. Plain light grey studio background, soft even lighting, no shadows on the background, sharp focus, natural skin texture, realistic fabric folds. No text, no logos, no props other than those described.</pre><button type="button" class="copy" data-target="p19">Copy</button></div>
+  <p class="save">Save as <code>GUARD_sheet.png</code></p>
+  <h4>2 · Front photo <small>aspect 3:4 · attach GUARD_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p20">Photorealistic full-body photo of a male mall security guard in his 30s wearing a dark navy security uniform jacket over a light blue shirt, black trousers, black shoes, a black walkie-talkie clipped to his chest and an ID badge, facing the camera, standing on a plain light grey studio background. Head to shoes in frame, soft even lighting, neutral expression, realistic fabric and skin detail, sharp focus. No text, no logos.</pre><button type="button" class="copy" data-target="p20">Copy</button></div>
+  <p class="save">Save as <code>GUARD_front.png</code></p>
+  <h4>3 · Back photo <small>aspect 3:4 · attach GUARD_sheet.png as the reference image</small></h4>
+  <div class="prompt"><pre id="p21">Photorealistic full-body photo of a male mall security guard in his 30s wearing a dark navy security uniform jacket over a light blue shirt, black trousers, black shoes, a black walkie-talkie clipped to his chest and an ID badge, seen from behind and slightly to the side, walking away, on a plain light grey studio background. Head to shoes in frame, soft even lighting, realistic fabric detail. No text, no logos.</pre><button type="button" class="copy" data-target="p21">Copy</button></div>
+  <p class="save">Save as <code>GUARD_back.png</code></p>
+  <label class="tick"><input type="checkbox" id="ck-char-GUARD"> <span>All three pictures show the same person in the same clothes</span></label>
+</details>
+</section>
+
+<section class="step" id="s2">
+  <div class="step-head"><span class="num">STEP 2</span><h2>Turn each character into an Element</h2><span class="meta">free</span></div>
+  <p>An Element keeps a person looking the same in every video. Go to <b>Video</b>, pick <b>Kling 3.0</b>, and open <b>Elements</b> (the <b>@</b> / element picker next to the prompt).</p>
+  <ol>
+    <li>Create a new Element (character).</li>
+    <li>Upload the character's three pictures: sheet, front, back.</li>
+    <li>Name it <b>exactly</b> like the tag, without spaces: <span class="tag">@FatherA</span> <span class="tag">@MotherA</span> <span class="tag">@BoyA</span> <span class="tag">@FatherB</span> <span class="tag">@MotherB</span> <span class="tag">@GirlB</span>. The video prompts use these names.</li>
+  </ol>
+  <p>If your plan has no Elements, skip this step and use <b>Way 2</b> in each clip below (the full description + the front photos as reference images, on <b>Kling 3.0 Omni</b>).</p>
+  <label class="tick"><input type="checkbox" id="ck-elements"> <span>All 6 Elements created and named with the tags</span></label>
+</section>
+
+<section class="step" id="s3">
+  <div class="step-head"><span class="num">STEP 3</span><h2>The first two videos: A1 and A3</h2><span class="meta">2 videos</span></div>
+  <p>Only these two first. They test whether CreativAI can find the family and the separation moment before you spend more credits.</p>
+  <dl class="settings">
+    <dt>Model</dt><dd>Kling 3.0 (Way 1) or Kling 3.0 Omni (Way 2)</dd>
+    <dt>Aspect ratio</dt><dd>16:9</dd>
+    <dt>Duration</dt><dd>15 s</dd>
+    <dt>Resolution</dt><dd>720p (it's security footage; cheaper)</dd>
+    <dt>Audio / sound</dt><dd>Off</dd>
+    <dt>Multi-shot</dt><dd>Off (one fixed camera, no cuts)</dd>
+    <dt>Negative prompt</dt><dd>If there's a field for it, paste this:</dd>
+  </dl>
+  <div class="prompt"><pre id="p22">camera movement, pan, tilt, zoom, dolly, tracking shot, handheld shake, cuts, scene change, cinematic lighting, shallow depth of field, bokeh, slow motion, lens flare, text, subtitles, timestamp, watermark, logo, distorted faces, extra limbs, merged people, morphing clothes, clothes changing colour, flicker, cartoon, CGI look</pre><button type="button" class="copy" data-target="p22">Copy negative prompt</button></div>
+  
+<details class="item" id="clip-A1">
+  <summary><span class="cid">A1</span> <span class="what">The family arrives</span>
+    <span class="files">camera ENT-01 · clock 14:02:00</span></summary>
+  <p class="why">Captures the whole family, and the boy&#x27;s look, when they arrive.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@FatherA</span>, <span class="tag">@MotherA</span>, <span class="tag">@BoyA</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p23">Scene: The inside of a modern Saudi shopping mall&#x27;s main entrance. Tall glass sliding doors at the bottom of the frame with bright daylight outside. A wide polished beige marble floor, a walk-through security gate beside the doors, potted palm trees on both sides. The camera faces the doors, so people who come in walk toward and under the camera.
+
+Characters: The father is @FatherA. The mother is @MotherA. The boy is @BoyA.
+
+Action: 0–3 s: Shoppers come in through the glass doors in ones and twos. 3–9 s: The father, the mother and the boy walk in together through the doors. The boy holds his mother&#x27;s hand on her right side; the father walks one step ahead. 9–15 s: The three keep walking straight toward the camera and pass underneath it, out of the bottom of the frame. Their faces and clothes are clearly visible as they approach.
+
+Background: A normal weekday-afternoon crowd moves through the background: other men in white thobes, women in black abayas, teenagers and families, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Ambient mall sound: footsteps, the doors sliding, distant chatter.</pre><button type="button" class="copy" data-target="p23">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>FATHER_A_front.png</code>, <code>MOTHER_A_front.png</code>, <code>BOY_A_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p24">Scene: The inside of a modern Saudi shopping mall&#x27;s main entrance. Tall glass sliding doors at the bottom of the frame with bright daylight outside. A wide polished beige marble floor, a walk-through security gate beside the doors, potted palm trees on both sides. The camera faces the doors, so people who come in walk toward and under the camera.
+
+Characters: The father: a tall, slim Saudi man in his early 40s with a short, neatly trimmed black beard, wearing a crisp ankle-length white thobe, a red-and-white checkered shemagh held by a black agal, black leather sandals and a silver wristwatch, carrying a dark green paper shopping bag with rope handles in his right hand. The mother: a Saudi woman in her mid-30s wearing a plain loose black abaya, a light grey hijab framing her face, black flat shoes, and a beige leather handbag on her left shoulder. The boy: a small 6-year-old boy with short black hair, wearing a plain bright red crew-neck t-shirt with no logo, mid-blue jeans and white sneakers.
+
+Action: 0–3 s: Shoppers come in through the glass doors in ones and twos. 3–9 s: The father, the mother and the boy walk in together through the doors. The boy holds his mother&#x27;s hand on her right side; the father walks one step ahead. 9–15 s: The three keep walking straight toward the camera and pass underneath it, out of the bottom of the frame. Their faces and clothes are clearly visible as they approach.
+
+Background: A normal weekday-afternoon crowd moves through the background: other men in white thobes, women in black abayas, teenagers and families, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Ambient mall sound: footsteps, the doors sliding, distant chatter.</pre><button type="button" class="copy" data-target="p24">Copy</button></div>
+  <p class="save">Save as <code>A1.mp4</code> → upload to <code>demo/raw/case-A/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-A1"> <span>A1 passed the checklist and is uploaded</span></label>
+</details>
+  
+<details class="item" id="clip-A3">
+  <summary><span class="cid">A3</span> <span class="what">The separation</span>
+    <span class="files">camera STR-B · clock 14:18:50</span></summary>
+  <p class="why">The key moment the system must find: the boy leaves the parents.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@FatherA</span>, <span class="tag">@MotherA</span>, <span class="tag">@BoyA</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p25">Scene: Inside an electronics store in the mall. White display tables in rows with phones, tablets and laptops on them, bright white light, accessory shelves along the back wall, and the open glass store entrance on the right side of the frame leading to the mall corridor.
+
+Characters: The father is @FatherA. The mother is @MotherA. The boy is @BoyA.
+
+Action: 0–4 s: The father stands at a display table in the centre, holding a phone and testing it with both hands. The mother stands behind him at the left, talking on her own mobile phone with her back half-turned to the boy. 4–9 s: The boy, standing beside the father, looks bored, lets go of the table and slowly wanders between the display tables toward the open store entrance on the right. 9–13 s: The boy walks out through the entrance into the mall corridor and disappears from the frame. 13–15 s: Both parents are still busy with their phones and do not look up. The boy is no longer in the store.
+
+Background: A salesman in a black polo shirt helps another customer at the back.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Store ambience, faint phone ringtones.</pre><button type="button" class="copy" data-target="p25">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>FATHER_A_front.png</code>, <code>MOTHER_A_front.png</code>, <code>BOY_A_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p26">Scene: Inside an electronics store in the mall. White display tables in rows with phones, tablets and laptops on them, bright white light, accessory shelves along the back wall, and the open glass store entrance on the right side of the frame leading to the mall corridor.
+
+Characters: The father: a tall, slim Saudi man in his early 40s with a short, neatly trimmed black beard, wearing a crisp ankle-length white thobe, a red-and-white checkered shemagh held by a black agal, black leather sandals and a silver wristwatch, carrying a dark green paper shopping bag with rope handles in his right hand. The mother: a Saudi woman in her mid-30s wearing a plain loose black abaya, a light grey hijab framing her face, black flat shoes, and a beige leather handbag on her left shoulder. The boy: a small 6-year-old boy with short black hair, wearing a plain bright red crew-neck t-shirt with no logo, mid-blue jeans and white sneakers.
+
+Action: 0–4 s: The father stands at a display table in the centre, holding a phone and testing it with both hands. The mother stands behind him at the left, talking on her own mobile phone with her back half-turned to the boy. 4–9 s: The boy, standing beside the father, looks bored, lets go of the table and slowly wanders between the display tables toward the open store entrance on the right. 9–13 s: The boy walks out through the entrance into the mall corridor and disappears from the frame. 13–15 s: Both parents are still busy with their phones and do not look up. The boy is no longer in the store.
+
+Background: A salesman in a black polo shirt helps another customer at the back.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Store ambience, faint phone ringtones.</pre><button type="button" class="copy" data-target="p26">Copy</button></div>
+  <p class="save">Save as <code>A3.mp4</code> → upload to <code>demo/raw/case-A/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-A3"> <span>A3 passed the checklist and is uploaded</span></label>
+</details>
+  <div class="stop"><strong>Stop here.</strong> Upload A1.mp4 and A3.mp4 (Step 5) and tell me. I run the CreativAI test on them first.</div>
+</section>
+
+<section class="step" id="s4">
+  <div class="step-head"><span class="num">STEP 4</span><h2>Check every clip before you keep it</h2></div>
+  <ul class="check">
+    <li>The camera <b>doesn't move</b>: no pan, zoom or shake.</li>
+    <li>Clothes <b>keep the same colours</b> for the whole clip and match the pictures.</li>
+    <li>The <b>key moment happens</b> (in A3 the boy really walks out of the store; in A6 the boy never leaves the table).</li>
+    <li>No text, logo or watermark in the picture.</li>
+    <li>Nothing grotesque (melting faces, extra arms). Small flaws are fine.</li>
+  </ul>
+  <p>If a clip fails, regenerate it once. We have 3 spare videos in the budget of 15.</p>
+</section>
+
+<section class="step" id="s5">
+  <div class="step-head"><span class="num">STEP 5</span><h2>Send me the files</h2></div>
+  <ol>
+    <li>Download the video from Higgsfield and rename it, for example <code>A1.mp4</code>.</li>
+    <li>Open the repo on GitHub: <a href="https://github.com/sahliadem0106/newnew/tree/claude/admiring-maxwell-ssqdjn" target="_blank" rel="noopener">sahliadem0106/newnew</a>, branch <code>claude/admiring-maxwell-ssqdjn</code>.</li>
+    <li>Click <b>Add file → Upload files</b>. In the file name box at the top, type the folder first: <code>demo/raw/case-A/</code> (for pictures: <code>demo/assets/characters/</code>). Drop the files in and press <b>Commit changes</b>.</li>
+    <li>Tell me in the chat which files you uploaded.</li>
+  </ol>
+  <p>Simpler alternative: attach the files directly in the chat with me.</p>
+</section>
+
+<section class="step" id="s6">
+  <div class="step-head"><span class="num">STEP 6</span><h2>The rest of Case A</h2><span class="meta">4 videos · after my OK</span></div>
+  <p>Same settings as Step 3.</p>
+  
+<details class="item" id="clip-A2">
+  <summary><span class="cid">A2</span> <span class="what">Shopping together</span>
+    <span class="files">camera STR-A · clock 14:08:00</span></summary>
+  <p class="why">Proves the boy is still with the family at 14:08.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@FatherA</span>, <span class="tag">@MotherA</span>, <span class="tag">@BoyA</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p27">Scene: Inside a women&#x27;s clothing store in the mall. Long racks of dresses and abayas in rows, wall shelves of folded clothes, warm white light, a full-length mirror on the right, the glass store entrance at the bottom of the frame.
+
+Characters: The father is @FatherA. The mother is @MotherA. The boy is @BoyA.
+
+Action: 0–5 s: The mother slides dresses along a rack in the middle of the frame, looking at each one. 5–10 s: The boy stands right next to her, holding the edge of her abaya, swinging slightly and looking around the store. 10–15 s: The father waits two metres away near the mirror, holding the green shopping bag and checking his phone. The family stays together the whole time.
+
+Background: Two or three other women browse the racks in the background.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Quiet store ambience.</pre><button type="button" class="copy" data-target="p27">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>FATHER_A_front.png</code>, <code>MOTHER_A_front.png</code>, <code>BOY_A_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p28">Scene: Inside a women&#x27;s clothing store in the mall. Long racks of dresses and abayas in rows, wall shelves of folded clothes, warm white light, a full-length mirror on the right, the glass store entrance at the bottom of the frame.
+
+Characters: The father: a tall, slim Saudi man in his early 40s with a short, neatly trimmed black beard, wearing a crisp ankle-length white thobe, a red-and-white checkered shemagh held by a black agal, black leather sandals and a silver wristwatch, carrying a dark green paper shopping bag with rope handles in his right hand. The mother: a Saudi woman in her mid-30s wearing a plain loose black abaya, a light grey hijab framing her face, black flat shoes, and a beige leather handbag on her left shoulder. The boy: a small 6-year-old boy with short black hair, wearing a plain bright red crew-neck t-shirt with no logo, mid-blue jeans and white sneakers.
+
+Action: 0–5 s: The mother slides dresses along a rack in the middle of the frame, looking at each one. 5–10 s: The boy stands right next to her, holding the edge of her abaya, swinging slightly and looking around the store. 10–15 s: The father waits two metres away near the mirror, holding the green shopping bag and checking his phone. The family stays together the whole time.
+
+Background: Two or three other women browse the racks in the background.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Quiet store ambience.</pre><button type="button" class="copy" data-target="p28">Copy</button></div>
+  <p class="save">Save as <code>A2.mp4</code> → upload to <code>demo/raw/case-A/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-A2"> <span>A2 passed the checklist and is uploaded</span></label>
+</details>
+<details class="item" id="clip-A4">
+  <summary><span class="cid">A4</span> <span class="what">The boy alone</span>
+    <span class="files">camera ATR-01 · clock 14:20:00</span></summary>
+  <p class="why">First sighting of the boy alone, heading west toward the food court.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@BoyA</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p29">Scene: A large two-storey mall atrium seen from high above. A round fountain in the centre with benches around it, escalators at the back, shopfronts around the edges, a cream marble floor with a geometric pattern.
+
+Characters: The boy is @BoyA.
+
+Action: 0–4 s: Shoppers cross the atrium in different directions around the fountain. 4–11 s: The boy walks alone from the top right of the frame across the atrium toward the bottom left, past the fountain, looking left and right as if searching for someone. No adult is with him. 11–15 s: He keeps walking and leaves the frame at the bottom left.
+
+Background: A normal weekday-afternoon crowd moves through the background: other men in white thobes, women in black abayas, teenagers and families, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Ambient atrium sound: fountain water, footsteps, chatter.</pre><button type="button" class="copy" data-target="p29">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>BOY_A_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p30">Scene: A large two-storey mall atrium seen from high above. A round fountain in the centre with benches around it, escalators at the back, shopfronts around the edges, a cream marble floor with a geometric pattern.
+
+Characters: The boy: a small 6-year-old boy with short black hair, wearing a plain bright red crew-neck t-shirt with no logo, mid-blue jeans and white sneakers.
+
+Action: 0–4 s: Shoppers cross the atrium in different directions around the fountain. 4–11 s: The boy walks alone from the top right of the frame across the atrium toward the bottom left, past the fountain, looking left and right as if searching for someone. No adult is with him. 11–15 s: He keeps walking and leaves the frame at the bottom left.
+
+Background: A normal weekday-afternoon crowd moves through the background: other men in white thobes, women in black abayas, teenagers and families, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Ambient atrium sound: fountain water, footsteps, chatter.</pre><button type="button" class="copy" data-target="p30">Copy</button></div>
+  <p class="save">Save as <code>A4.mp4</code> → upload to <code>demo/raw/case-A/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-A4"> <span>A4 passed the checklist and is uploaded</span></label>
+</details>
+<details class="item" id="clip-A5">
+  <summary><span class="cid">A5</span> <span class="what">Lost at the food court</span>
+    <span class="files">camera FC-02 · clock 14:23:00</span></summary>
+  <p class="why">Where the boy is now: the answer the guard needs.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@BoyA</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p31">Scene: A row of fast-food counters in a mall food court. Illuminated menu boards above the counters with no readable text, queues of customers in front of each counter, a few tables in the foreground.
+
+Characters: The boy is @BoyA.
+
+Action: 0–5 s: Customers queue at the counters and carry trays. 5–12 s: The boy stands still alone in the open space beside a counter in the middle of the frame, turning his head around anxiously, rubbing his eyes as if about to cry. Adults walk past him without stopping. 12–15 s: He stays in the same spot, alone, looking around.
+
+Background: A normal weekday-afternoon crowd moves through the background: other men in white thobes, women in black abayas, teenagers and families, so the main characters are not the only people in similar clothes. Several other children are with their parents in the queues.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Food court noise, a child sniffling.</pre><button type="button" class="copy" data-target="p31">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>BOY_A_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p32">Scene: A row of fast-food counters in a mall food court. Illuminated menu boards above the counters with no readable text, queues of customers in front of each counter, a few tables in the foreground.
+
+Characters: The boy: a small 6-year-old boy with short black hair, wearing a plain bright red crew-neck t-shirt with no logo, mid-blue jeans and white sneakers.
+
+Action: 0–5 s: Customers queue at the counters and carry trays. 5–12 s: The boy stands still alone in the open space beside a counter in the middle of the frame, turning his head around anxiously, rubbing his eyes as if about to cry. Adults walk past him without stopping. 12–15 s: He stays in the same spot, alone, looking around.
+
+Background: A normal weekday-afternoon crowd moves through the background: other men in white thobes, women in black abayas, teenagers and families, so the main characters are not the only people in similar clothes. Several other children are with their parents in the queues.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Food court noise, a child sniffling.</pre><button type="button" class="copy" data-target="p32">Copy</button></div>
+  <p class="save">Save as <code>A5.mp4</code> → upload to <code>demo/raw/case-A/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-A5"> <span>A5 passed the checklist and is uploaded</span></label>
+</details>
+<details class="item" id="clip-A6">
+  <summary><span class="cid">A6</span> <span class="what">Trick: lookalike family</span>
+    <span class="files">camera FC-01 · clock 14:24:00</span></summary>
+  <p class="why">TRICK: a different family dressed almost like family A, with a boy in red. The system must say &#x27;not our boy&#x27; (he is with his parents, wears shorts, and the real family is elsewhere at that time).</p>
+  
+  <p>No Elements: these strangers are described in full inside the prompt. Don't attach any picture.</p>
+  <div class="prompt"><pre id="p33">Scene: A large busy mall food court seen from above. Rows of square tables with chairs, families eating, trays of food, a carpeted family section on the left, restaurant counters along the far wall.
+
+Characters: The other father: a Saudi man in his late 30s with a short black beard, wearing a white thobe and a red-and-white checkered shemagh with a black agal, empty-handed with no shopping bag. The other mother: a woman in a plain black abaya with a light grey hijab. The other boy: a 6-year-old boy with short black hair wearing a bright red t-shirt, black shorts and white sneakers.
+
+Action: 0–5 s: The other family sits together at a table in the centre of the frame eating burgers and fries; the other boy sits between his parents. 5–11 s: The other boy stands up on his chair and laughs; the other mother helps him sit down again and the other father hands him a drink. 11–15 s: The three keep eating together. The boy never leaves the table and is never alone.
+
+Background: A normal weekday-afternoon crowd moves through the background: other men in white thobes, women in black abayas, teenagers and families, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Food court noise, cutlery, a child laughing.</pre><button type="button" class="copy" data-target="p33">Copy</button></div>
+  <p class="save">Save as <code>A6.mp4</code> → upload to <code>demo/raw/case-A/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-A6"> <span>A6 passed the checklist and is uploaded</span></label>
+</details>
+</section>
+
+<section class="step" id="s7">
+  <div class="step-head"><span class="num">STEP 7</span><h2>Case B, the blind test</h2><span class="meta">6 videos</span></div>
+  <p>Same settings. Upload to <code>demo/raw/case-B/</code>. This case is kept sealed: the system is tested on it only once, after the code is frozen, so don't run anything on these clips yourself.</p>
+  
+<details class="item" id="clip-B1">
+  <summary><span class="cid">B1</span> <span class="what">The family arrives</span>
+    <span class="files">camera ENT-02 · clock 19:10:00</span></summary>
+  <p class="why">Captures the family, the stroller and the girl&#x27;s look on arrival.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@FatherB</span>, <span class="tag">@MotherB</span>, <span class="tag">@GirlB</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p34">Scene: The inside of the mall&#x27;s parking-level entrance at night. A pair of automatic glass doors at the bottom of the frame with a dim grey car park outside, a light grey tiled floor, an elevator lobby on the left, a pillar with a blank directory board on the right. The camera faces the doors, so people who come in walk toward and under the camera.
+
+Characters: The father is @FatherB. The mother is @MotherB. The girl is @GirlB.
+
+Action: 0–3 s: People come in through the automatic doors from the car park. 3–9 s: The father, the mother pushing the stroller, and the girl walk in together. The girl holds the side of the stroller with one hand and her purple bunny in the other. 9–15 s: They walk straight toward the camera and pass underneath it, out of the bottom of the frame. Their clothes and the stroller are clearly visible.
+
+Background: A busy evening crowd moves through the background: many men in white and grey thobes, women in black abayas, families with children and strollers, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Doors sliding, footsteps, car park echo.</pre><button type="button" class="copy" data-target="p34">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>FATHER_B_front.png</code>, <code>MOTHER_B_front.png</code>, <code>GIRL_B_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p35">Scene: The inside of the mall&#x27;s parking-level entrance at night. A pair of automatic glass doors at the bottom of the frame with a dim grey car park outside, a light grey tiled floor, an elevator lobby on the left, a pillar with a blank directory board on the right. The camera faces the doors, so people who come in walk toward and under the camera.
+
+Characters: The father: a Saudi man in his mid-30s of average build with a full dark beard, wearing a light grey ankle-length thobe, a plain white ghutra held by a black agal, brown leather sandals, and a black backpack on one shoulder. The mother: a Saudi woman wearing a black abaya with dark navy embroidery along the sleeves and hem, a black hijab and black niqab, with a grey baby stroller carrying a baby under a white blanket. The girl: a 7-year-old girl with long black hair in a high ponytail tied with a yellow hair tie, wearing a bright yellow hoodie, light pink leggings and white sneakers, holding a small purple plush bunny.
+
+Action: 0–3 s: People come in through the automatic doors from the car park. 3–9 s: The father, the mother pushing the stroller, and the girl walk in together. The girl holds the side of the stroller with one hand and her purple bunny in the other. 9–15 s: They walk straight toward the camera and pass underneath it, out of the bottom of the frame. Their clothes and the stroller are clearly visible.
+
+Background: A busy evening crowd moves through the background: many men in white and grey thobes, women in black abayas, families with children and strollers, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Doors sliding, footsteps, car park echo.</pre><button type="button" class="copy" data-target="p35">Copy</button></div>
+  <p class="save">Save as <code>B1.mp4</code> → upload to <code>demo/raw/case-B/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-B1"> <span>B1 passed the checklist and is uploaded</span></label>
+</details>
+<details class="item" id="clip-B2">
+  <summary><span class="cid">B2</span> <span class="what">Walking to the food court</span>
+    <span class="files">camera COR-W · clock 19:14:00</span></summary>
+  <p class="why">Proves the girl is still with the family at 19:14.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@FatherB</span>, <span class="tag">@MotherB</span>, <span class="tag">@GirlB</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p36">Scene: A long straight mall corridor stretching away from the camera, shopfronts with glass windows on both sides, a cream marble floor, rows of ceiling lights, a few decorative planters down the middle. The far end opens toward a food court.
+
+Characters: The father is @FatherB. The mother is @MotherB. The girl is @GirlB.
+
+Action: 0–4 s: The evening crowd walks in both directions along the corridor. 4–12 s: The father, the mother with the stroller, and the girl walk together away from the camera down the middle of the corridor toward the food court. The girl skips beside the stroller. 12–15 s: They get smaller in the distance, still together.
+
+Background: A busy evening crowd moves through the background: many men in white and grey thobes, women in black abayas, families with children and strollers, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Corridor ambience.</pre><button type="button" class="copy" data-target="p36">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>FATHER_B_front.png</code>, <code>MOTHER_B_front.png</code>, <code>GIRL_B_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p37">Scene: A long straight mall corridor stretching away from the camera, shopfronts with glass windows on both sides, a cream marble floor, rows of ceiling lights, a few decorative planters down the middle. The far end opens toward a food court.
+
+Characters: The father: a Saudi man in his mid-30s of average build with a full dark beard, wearing a light grey ankle-length thobe, a plain white ghutra held by a black agal, brown leather sandals, and a black backpack on one shoulder. The mother: a Saudi woman wearing a black abaya with dark navy embroidery along the sleeves and hem, a black hijab and black niqab, with a grey baby stroller carrying a baby under a white blanket. The girl: a 7-year-old girl with long black hair in a high ponytail tied with a yellow hair tie, wearing a bright yellow hoodie, light pink leggings and white sneakers, holding a small purple plush bunny.
+
+Action: 0–4 s: The evening crowd walks in both directions along the corridor. 4–12 s: The father, the mother with the stroller, and the girl walk together away from the camera down the middle of the corridor toward the food court. The girl skips beside the stroller. 12–15 s: They get smaller in the distance, still together.
+
+Background: A busy evening crowd moves through the background: many men in white and grey thobes, women in black abayas, families with children and strollers, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Corridor ambience.</pre><button type="button" class="copy" data-target="p37">Copy</button></div>
+  <p class="save">Save as <code>B2.mp4</code> → upload to <code>demo/raw/case-B/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-B2"> <span>B2 passed the checklist and is uploaded</span></label>
+</details>
+<details class="item" id="clip-B3">
+  <summary><span class="cid">B3</span> <span class="what">The separation</span>
+    <span class="files">camera FC-01 · clock 19:21:00</span></summary>
+  <p class="why">The key moment: the girl leaves while both parents are busy.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@FatherB</span>, <span class="tag">@MotherB</span>, <span class="tag">@GirlB</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p38">Scene: A large busy mall food court seen from above. Rows of square tables with chairs, families eating, trays of food, a carpeted family section on the left, restaurant counters along the far wall.
+
+Characters: The father is @FatherB. The mother is @MotherB. The girl is @GirlB.
+
+Action: 0–4 s: The family sits at a table in the middle of the frame. The mother bends over the stroller beside the table, busy with the crying baby. The father stands up and walks away toward the restaurant counters at the far wall. 4–9 s: The girl, sitting at the table, watches a group of children walk past, gets off her chair holding her purple bunny and follows them toward the right edge of the frame. 9–13 s: She walks out of the frame on the right, toward the corridor, alone. 13–15 s: The mother is still focused on the baby and the father is in the queue. The girl&#x27;s chair is empty.
+
+Background: A busy evening crowd moves through the background: many men in white and grey thobes, women in black abayas, families with children and strollers, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Food court noise, a baby crying.</pre><button type="button" class="copy" data-target="p38">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>FATHER_B_front.png</code>, <code>MOTHER_B_front.png</code>, <code>GIRL_B_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p39">Scene: A large busy mall food court seen from above. Rows of square tables with chairs, families eating, trays of food, a carpeted family section on the left, restaurant counters along the far wall.
+
+Characters: The father: a Saudi man in his mid-30s of average build with a full dark beard, wearing a light grey ankle-length thobe, a plain white ghutra held by a black agal, brown leather sandals, and a black backpack on one shoulder. The mother: a Saudi woman wearing a black abaya with dark navy embroidery along the sleeves and hem, a black hijab and black niqab, with a grey baby stroller carrying a baby under a white blanket. The girl: a 7-year-old girl with long black hair in a high ponytail tied with a yellow hair tie, wearing a bright yellow hoodie, light pink leggings and white sneakers, holding a small purple plush bunny.
+
+Action: 0–4 s: The family sits at a table in the middle of the frame. The mother bends over the stroller beside the table, busy with the crying baby. The father stands up and walks away toward the restaurant counters at the far wall. 4–9 s: The girl, sitting at the table, watches a group of children walk past, gets off her chair holding her purple bunny and follows them toward the right edge of the frame. 9–13 s: She walks out of the frame on the right, toward the corridor, alone. 13–15 s: The mother is still focused on the baby and the father is in the queue. The girl&#x27;s chair is empty.
+
+Background: A busy evening crowd moves through the background: many men in white and grey thobes, women in black abayas, families with children and strollers, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Food court noise, a baby crying.</pre><button type="button" class="copy" data-target="p39">Copy</button></div>
+  <p class="save">Save as <code>B3.mp4</code> → upload to <code>demo/raw/case-B/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-B3"> <span>B3 passed the checklist and is uploaded</span></label>
+</details>
+<details class="item" id="clip-B4">
+  <summary><span class="cid">B4</span> <span class="what">The girl alone</span>
+    <span class="files">camera ATR-01 · clock 19:23:00</span></summary>
+  <p class="why">Same atrium camera as case A, opposite direction: the girl heads east.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@GirlB</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p40">Scene: A large two-storey mall atrium seen from high above. A round fountain in the centre with benches around it, escalators at the back, shopfronts around the edges, a cream marble floor with a geometric pattern.
+
+Characters: The girl is @GirlB.
+
+Action: 0–4 s: The evening crowd crosses the atrium around the fountain. 4–11 s: The girl walks alone from the bottom left of the frame across the atrium toward the top right, hugging her purple bunny, looking at the shops. No adult is with her. 11–15 s: She keeps walking and leaves the frame at the top right, toward the east corridor.
+
+Background: A busy evening crowd moves through the background: many men in white and grey thobes, women in black abayas, families with children and strollers, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Fountain water, footsteps, chatter.</pre><button type="button" class="copy" data-target="p40">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>GIRL_B_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p41">Scene: A large two-storey mall atrium seen from high above. A round fountain in the centre with benches around it, escalators at the back, shopfronts around the edges, a cream marble floor with a geometric pattern.
+
+Characters: The girl: a 7-year-old girl with long black hair in a high ponytail tied with a yellow hair tie, wearing a bright yellow hoodie, light pink leggings and white sneakers, holding a small purple plush bunny.
+
+Action: 0–4 s: The evening crowd crosses the atrium around the fountain. 4–11 s: The girl walks alone from the bottom left of the frame across the atrium toward the top right, hugging her purple bunny, looking at the shops. No adult is with her. 11–15 s: She keeps walking and leaves the frame at the top right, toward the east corridor.
+
+Background: A busy evening crowd moves through the background: many men in white and grey thobes, women in black abayas, families with children and strollers, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Fountain water, footsteps, chatter.</pre><button type="button" class="copy" data-target="p41">Copy</button></div>
+  <p class="save">Save as <code>B4.mp4</code> → upload to <code>demo/raw/case-B/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-B4"> <span>B4 passed the checklist and is uploaded</span></label>
+</details>
+<details class="item" id="clip-B5">
+  <summary><span class="cid">B5</span> <span class="what">In the toy store</span>
+    <span class="files">camera STR-C · clock 19:26:00</span></summary>
+  <p class="why">Where the girl is now: calm, but alone in a toy store, a very common real case.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@GirlB</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p42">Scene: Inside a toy store in the mall. Low colourful shelves full of plush toys and boxed toys, a small play table with large building blocks in the middle of the floor, bright cheerful lighting, a cashier counter at the top right, the store entrance at the bottom left of the frame.
+
+Characters: The girl is @GirlB.
+
+Action: 0–4 s: Two other children play with their mother near the shelves at the back. 4–12 s: The girl walks in from the entrance at the bottom left, alone, goes to the play table in the middle and starts stacking the big building blocks, calm and absorbed. Nobody is with her. 12–15 s: She keeps playing alone; the cashier at the counter does not notice her.
+
+Background: A cashier stands behind the counter; one family browses the shelves.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Store music, children&#x27;s voices.</pre><button type="button" class="copy" data-target="p42">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>GIRL_B_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p43">Scene: Inside a toy store in the mall. Low colourful shelves full of plush toys and boxed toys, a small play table with large building blocks in the middle of the floor, bright cheerful lighting, a cashier counter at the top right, the store entrance at the bottom left of the frame.
+
+Characters: The girl: a 7-year-old girl with long black hair in a high ponytail tied with a yellow hair tie, wearing a bright yellow hoodie, light pink leggings and white sneakers, holding a small purple plush bunny.
+
+Action: 0–4 s: Two other children play with their mother near the shelves at the back. 4–12 s: The girl walks in from the entrance at the bottom left, alone, goes to the play table in the middle and starts stacking the big building blocks, calm and absorbed. Nobody is with her. 12–15 s: She keeps playing alone; the cashier at the counter does not notice her.
+
+Background: A cashier stands behind the counter; one family browses the shelves.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Store music, children&#x27;s voices.</pre><button type="button" class="copy" data-target="p43">Copy</button></div>
+  <p class="save">Save as <code>B5.mp4</code> → upload to <code>demo/raw/case-B/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-B5"> <span>B5 passed the checklist and is uploaded</span></label>
+</details>
+<details class="item" id="clip-B6">
+  <summary><span class="cid">B6</span> <span class="what">Trick: false alarm</span>
+    <span class="files">camera COR-E · clock 19:30:00</span></summary>
+  <p class="why">TRICK: a girl in a yellow hoodie is briefly alone, but her mother catches up. The system must NOT raise an alarm or confuse her with the lost girl (who is in the toy store since 19:25).</p>
+  
+  <p>No Elements: these strangers are described in full inside the prompt. Don't attach any picture.</p>
+  <div class="prompt"><pre id="p44">Scene: A long straight mall corridor stretching away from the camera, shopfronts with glass windows on both sides, a cream marble floor, rows of ceiling lights, pillars along the right side.
+
+Characters: The other girl: a 7-year-old girl with long black hair in a ponytail, wearing a bright yellow hoodie, blue jeans and pink sneakers, holding no toy. Her mother: a woman in a plain black abaya and black niqab carrying a white shopping bag.
+
+Action: 0–4 s: The evening crowd walks along the corridor in both directions. 4–9 s: The other girl walks quickly toward the camera down the middle of the corridor, alone, looking into the shop windows. 9–13 s: Her mother hurries after her from behind, catches up and takes her hand; the girl smiles up at her. 13–15 s: They walk on together, hand in hand, and pass under the camera out of the bottom of the frame.
+
+Background: A busy evening crowd moves through the background: many men in white and grey thobes, women in black abayas, families with children and strollers, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Corridor ambience.</pre><button type="button" class="copy" data-target="p44">Copy</button></div>
+  <p class="save">Save as <code>B6.mp4</code> → upload to <code>demo/raw/case-B/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-B6"> <span>B6 passed the checklist and is uploaded</span></label>
+</details>
+</section>
+
+<section class="step" id="s8">
+  <div class="step-head"><span class="num">STEP 8</span><h2>Extras, only if spares are left</h2><span class="meta">for the demo video</span></div>
+  <p>These need the guard (make the optional guard pictures in Step 1 and an Element named <span class="tag">@Guard</span>).</p>
+  
+<details class="item" id="clip-A7">
+  <summary><span class="cid">A7</span> <span class="what">Report to security</span>
+    <span class="files">camera INF-01 · clock 14:27:00</span></summary>
+  <p class="why">The moment the case starts in our website.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@FatherA</span>, <span class="tag">@MotherA</span>, <span class="tag">@Guard</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p45">Scene: The mall&#x27;s information and security desk. A curved white desk with a monitor, a uniformed guard standing behind it, a small seating area to the side, a corridor in the background.
+
+Characters: The father is @FatherA. The mother is @MotherA. The guard is @Guard.
+
+Action: 0–4 s: The guard stands behind the desk. The father and the mother arrive quickly at the desk. 4–11 s: The mother speaks urgently, showing a child&#x27;s height with her hand at waist level; the father points back toward the corridor. 11–15 s: The guard nods, lifts his walkie-talkie and speaks into it.
+
+Background: One or two people wait on the seating area.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Urgent conversation, radio static.</pre><button type="button" class="copy" data-target="p45">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>FATHER_A_front.png</code>, <code>MOTHER_A_front.png</code>, <code>GUARD_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p46">Scene: The mall&#x27;s information and security desk. A curved white desk with a monitor, a uniformed guard standing behind it, a small seating area to the side, a corridor in the background.
+
+Characters: The father: a tall, slim Saudi man in his early 40s with a short, neatly trimmed black beard, wearing a crisp ankle-length white thobe, a red-and-white checkered shemagh held by a black agal, black leather sandals and a silver wristwatch, carrying a dark green paper shopping bag with rope handles in his right hand. The mother: a Saudi woman in her mid-30s wearing a plain loose black abaya, a light grey hijab framing her face, black flat shoes, and a beige leather handbag on her left shoulder. The guard: a male mall security guard in his 30s wearing a dark navy security uniform jacket over a light blue shirt, black trousers, black shoes, a black walkie-talkie clipped to his chest and an ID badge.
+
+Action: 0–4 s: The guard stands behind the desk. The father and the mother arrive quickly at the desk. 4–11 s: The mother speaks urgently, showing a child&#x27;s height with her hand at waist level; the father points back toward the corridor. 11–15 s: The guard nods, lifts his walkie-talkie and speaks into it.
+
+Background: One or two people wait on the seating area.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Urgent conversation, radio static.</pre><button type="button" class="copy" data-target="p46">Copy</button></div>
+  <p class="save">Save as <code>A7.mp4</code> → upload to <code>demo/raw/case-A/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-A7"> <span>A7 passed the checklist and is uploaded</span></label>
+</details>
+<details class="item" id="clip-A8">
+  <summary><span class="cid">A8</span> <span class="what">Reunion</span>
+    <span class="files">camera FC-02 · clock 14:33:00</span></summary>
+  <p class="why">The happy ending for the demo video.</p>
+  
+  <h4>Way 1 · With Elements <small>recommended</small></h4>
+  <p>Add the Elements <span class="tag">@FatherA</span>, <span class="tag">@MotherA</span>, <span class="tag">@BoyA</span>, <span class="tag">@Guard</span> to the generation, then paste:</p>
+  <div class="prompt"><pre id="p47">Scene: A row of fast-food counters in a mall food court. Illuminated menu boards above the counters with no readable text, queues of customers in front of each counter, a few tables in the foreground.
+
+Characters: The father is @FatherA. The mother is @MotherA. The boy is @BoyA. The guard is @Guard.
+
+Action: 0–4 s: The boy stands alone beside the counter, as before. 4–9 s: The guard walks in from the bottom of the frame with the father and the mother right behind him. 9–15 s: The mother runs to the boy, kneels and hugs him tightly; the father puts his hand on the boy&#x27;s head; the guard stands next to them, relieved.
+
+Background: A normal weekday-afternoon crowd moves through the background: other men in white thobes, women in black abayas, teenagers and families, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Food court noise.</pre><button type="button" class="copy" data-target="p47">Copy</button></div>
+  <h4>Way 2 · Without Elements <small>Kling 3.0 Omni / reference images</small></h4>
+  <p>Attach these reference images in this order: <code>FATHER_A_front.png</code>, <code>MOTHER_A_front.png</code>, <code>BOY_A_front.png</code>, <code>GUARD_front.png</code>. Then paste:</p>
+  <div class="prompt"><pre id="p48">Scene: A row of fast-food counters in a mall food court. Illuminated menu boards above the counters with no readable text, queues of customers in front of each counter, a few tables in the foreground.
+
+Characters: The father: a tall, slim Saudi man in his early 40s with a short, neatly trimmed black beard, wearing a crisp ankle-length white thobe, a red-and-white checkered shemagh held by a black agal, black leather sandals and a silver wristwatch, carrying a dark green paper shopping bag with rope handles in his right hand. The mother: a Saudi woman in her mid-30s wearing a plain loose black abaya, a light grey hijab framing her face, black flat shoes, and a beige leather handbag on her left shoulder. The boy: a small 6-year-old boy with short black hair, wearing a plain bright red crew-neck t-shirt with no logo, mid-blue jeans and white sneakers. The guard: a male mall security guard in his 30s wearing a dark navy security uniform jacket over a light blue shirt, black trousers, black shoes, a black walkie-talkie clipped to his chest and an ID badge.
+
+Action: 0–4 s: The boy stands alone beside the counter, as before. 4–9 s: The guard walks in from the bottom of the frame with the father and the mother right behind him. 9–15 s: The mother runs to the boy, kneels and hugs him tightly; the father puts his hand on the boy&#x27;s head; the guard stands next to them, relieved.
+
+Background: A normal weekday-afternoon crowd moves through the background: other men in white thobes, women in black abayas, teenagers and families, so the main characters are not the only people in similar clothes.
+
+Camera and look: Security-camera recording from a fixed camera mounted high on the ceiling, about four metres up, angled about forty degrees down, with a wide-angle lens and slight barrel distortion at the edges. Locked-off static shot: the camera does not pan, tilt, zoom or shake at any moment. Flat even LED mall lighting, slightly washed-out colours, mild digital noise and light video compression, everything in focus, no cinematic depth of field, real-time speed.
+
+Audio: Food court noise.</pre><button type="button" class="copy" data-target="p48">Copy</button></div>
+  <p class="save">Save as <code>A8.mp4</code> → upload to <code>demo/raw/case-A/</code></p>
+  <label class="tick"><input type="checkbox" id="ck-clip-A8"> <span>A8 passed the checklist and is uploaded</span></label>
+</details>
+</section>
+
+</div>
+<p class="foot">Built from <code>demo/prompts/prompts.json</code> by <code>demo/prompts/build_guide.py</code>. To change a prompt, edit <code>build_prompts.py</code>, then rebuild both.</p>
+</div>
+
+<script>
+document.querySelectorAll('.copy').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var pre = document.getElementById(b.dataset.target);
+    var done = function () { var t = b.textContent; b.textContent = 'Copied'; b.classList.add('done');
+      setTimeout(function () { b.textContent = t; b.classList.remove('done'); }, 1500); };
+    var select = function () { var r = document.createRange(); r.selectNodeContents(pre);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Press Ctrl+C'; };
+    try { navigator.clipboard.writeText(pre.textContent).then(done, select); } catch (e) { select(); }
+  });
+});
+document.querySelectorAll('.tick input').forEach(function (cb) {
+  try { cb.checked = localStorage.getItem(cb.id) === '1'; } catch (e) {}
+  cb.addEventListener('change', function () { try { localStorage.setItem(cb.id, cb.checked ? '1' : '0'); } catch (e) {} });
+});
+</script>
