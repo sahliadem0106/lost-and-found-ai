@@ -299,7 +299,7 @@ footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(
   <header>
     <span class="eyebrow">Behind the replay</span>
     <h2>How it was built</h2>
-    <p class="intro">The whole project, end to end: how the footage was made, how CreativAI was used, what each script does, <a href="#works">what works</a>, its <a href="#critique">limits and their fixes</a>, what a real deployment would cost, and the <a href="#questions">research questions</a> it raised.</p>
+    <p class="intro">The whole project, end to end: how the footage was made, how CreativAI was used, what each script does, <a href="#works">what works</a>, its <a href="#critique">limits and their fixes</a>, what a real deployment would cost, and the <a href="#questions">questions</a> it raised.</p>
   </header>
 
   <div>
@@ -406,32 +406,12 @@ footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(
   </div>
 
   <div id="questions">
-    <h3>Open research questions</h3>
-    <p class="muted" style="margin:0 0 16px;max-width:80ch">Building this left me curious about video intelligence in general, and about how CreativAI works under the hood. These are the questions I'd most like to explore, each grounded in something I saw in this project.</p>
-    <div class="qgroups">
-      <div class="qgroup"><span class="qtheme">Accuracy &amp; reliability</span>
-        <div class="q"><b>Can an answer come with a confidence?</b><p>A calibrated confidence per answer would let an agent re-ask, cross-check or hand over to a human only when it matters.</p><small>Why I ask: on the first atrium clip CreativAI was confident, and wrong.</small></div>
-        <div class="q"><b>How are partial matches weighed in a multi-attribute question?</b><p>Is attribute-level grounding available, so "thobe ✓, shemagh ✓, bag ✗" stays a strong match instead of a "no"?</p><small>Why I ask: "not carrying a shopping bag" turned a correct family into a "no".</small></div>
-        <div class="q"><b>How precise is timing inside a chunk?</b><p>Can an event be localised to the frame, and how is that evaluated?</p><small>Why I ask: the separation second ("4") was right within a few seconds, but I couldn't verify it.</small></div>
-      </div>
-      <div class="qgroup"><span class="qtheme">Efficiency &amp; cost</span>
-        <div class="q"><b>Why 16-second chunks?</b><p>How does chunk length trade recall against cost and temporal precision, and could it adapt to the content (busy scenes shorter, empty corridors longer)?</p><small>Why I ask: a 15-second clip became a single search hit with no timing.</small></div>
-        <div class="q"><b>Can indexing be progressive?</b><p>A cheap first pass over a whole time window, then expensive reasoning only on the chunks an agent flags.</p><small>Why I ask: a camera map already narrows each search to a few minutes on a few cameras.</small></div>
-        <div class="q"><b>What bounds the latency of a question round?</b><p>Model inference, queueing or orchestration, and what's achievable when every minute counts?</p><small>Why I ask: each round took about a minute.</small></div>
-      </div>
-      <div class="qgroup"><span class="qtheme">Sustainability</span>
-        <div class="q"><b>What is the compute and energy cost per indexed video-hour?</b><p>How does it compare with running open detectors and re-identification on edge devices, and where is the right split between edge and cloud?</p><small>Why I ask: at this project's rate, always-on indexing of 12 cameras would be ≈ $3,450 a month.</small></div>
-        <div class="q"><b>How do indexes stay valid when models improve?</b><p>Are old embeddings re-indexed, versioned or mixed, and how is accuracy kept stable across camera sites and over time?</p><small>Why I ask: a system that finds people has to be maintainable for years, not just accurate on launch day.</small></div>
-      </div>
-      <div class="qgroup"><span class="qtheme">Evaluation &amp; trust</span>
-        <div class="q"><b>How is end-to-end question answering evaluated?</b><p>Is there a benchmark for natural-language questions over long, multi-camera footage, not only for retrieval?</p><small>Why I ask: I could only grade answers by checking frames myself.</small></div>
-        <div class="q"><b>Can privacy be enforced server-side?</b><p>Queries limited to a time window and camera set, with automatic deletion, so the system fits the rules for public spaces by design.</p><small>Why I ask: this use case only needs one window of one afternoon.</small></div>
-      </div>
-      <div class="qgroup"><span class="qtheme">Computer vision, more broadly</span>
-        <div class="q"><b>Do spatial priors reduce hallucinations?</b><p>Combining a camera-topology graph with a vision-language model worked here; is there measurable evidence that physical constraints make video QA more reliable?</p><small>Why I ask: the map rejected impossible moves that appearance alone couldn't.</small></div>
-        <div class="q"><b>How far can synthetic CCTV go?</b><p>How large is the gap between generated and real surveillance footage, for training and for evaluation?</p><small>Why I ask: every clip here was generated, and they needed human review.</small></div>
-        <div class="q"><b>When should an agent ask a VLM, and when a specialised model?</b><p>Is there work on learned query planning for video, deciding what to ask, about which footage, in what order?</p><small>Why I ask: the agent's questions and rules here were written by hand.</small></div>
-      </div>
+    <h3>Questions I'm curious about</h3>
+    <p class="muted" style="margin:0 0 16px;max-width:80ch">Three questions this project left me curious about.</p>
+    <div class="qgroup">
+      <div class="q"><b>Can the AI tell us how sure it is?</b><p>If every answer came with a confidence, the system could say "I'm not sure" and ask a person, instead of guessing.</p><small>Why I ask: on one ambiguous clip, CreativAI was confident and wrong.</small></div>
+      <div class="q"><b>Does knowing the building make a vision AI smarter?</b><p>A camera map knows who can physically be where, and when. How much does that kind of knowledge reduce a vision model's mistakes?</p><small>Why I ask: the map caught impossible moves that looking at the video alone couldn't.</small></div>
+      <div class="q"><b>How cheap and fast can video understanding get?</b><p>What decides the cost and the waiting time: the model, the chunk size, or how much footage we choose to look at?</p><small>Why I ask: looking only at the time window from the report brought a case down to a few dollars.</small></div>
     </div>
   </div>
 
