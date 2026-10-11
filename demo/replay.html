@@ -4,156 +4,133 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lost &amp; Found Replay</title>
-<meta name="description" content="Step-by-step replay of an AI agent finding a lost child across mall security cameras, using a camera graph and CreativAI video understanding.">
+<meta name="description" content="How an agent found a lost child across mall security cameras: the scenario, how CreativAI watches the footage, and every prompt and answer of a real run.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Investigation board: the map stays large on the left, the investigation log grows on the right,
-   the timeline sits under both, and the footage strip shows what happened to every clip. */
+/* A long, scrolling story. The ground-floor camera map is pinned on the left at full height;
+   the story scrolls on the right, and each step animates the map as it reaches the middle. */
 :root {
   color-scheme: dark;
-  --bg: #0b1418; --panel: #111e24; --panel2: #0d181d; --raise: #16272e; --line: #233a43; --fg: #dbe7ea; --muted: #87a0a7; --faint: #5d7880;
-  --family: #5ec4dc; --child: #f2a541; --alert: #e5605a; --ok: #6fcf8f; --zone: #142731; --eyes: #b59cf0;
+  --bg: #0a1317; --panel: #101c22; --panel2: #0c171c; --raise: #15262d; --line: #223841; --fg: #dde8eb; --muted: #8aa2a9; --faint: #5b757d;
+  --family: #5ec4dc; --child: #f2a541; --alert: #e5605a; --ok: #6fcf8f; --zone: #13252e; --eyes: #b59cf0;
   --display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --body: "IBM Plex Sans", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.55; }
-body { padding: 0 16px 48px; }
+html { scroll-behavior: smooth; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.6; }
 a { color: var(--family); }
-.wrap { max-width: 1440px; margin: 0 auto; display: grid; gap: 16px; }
+code, kbd { font-family: var(--mono); font-size: .9em; }
 
-/* Top bar */
-.top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px 0 4px; border-bottom: 1px solid var(--line); }
-.brand { display: flex; align-items: baseline; gap: 4px 14px; flex-wrap: wrap; min-width: 0; }
-.brand h1 { font: 700 30px/1 var(--display); letter-spacing: .06em; text-transform: uppercase; margin: 0; }
-.brand p { margin: 0; color: var(--muted); font-size: 14px; }
-.brand p b.m { color: var(--family); } .brand p b.e { color: var(--eyes); } .brand p b.a { color: var(--child); }
-.status { display: flex; align-items: center; gap: 18px; }
-.phase { font: 600 14px var(--display); letter-spacing: .12em; text-transform: uppercase; padding: 4px 12px; border-radius: 999px; background: var(--raise); color: var(--muted); white-space: nowrap; }
-.clock { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
-.clock b { display: block; font-size: 30px; font-weight: 500; line-height: 1; }
-.clock small { color: var(--muted); letter-spacing: .14em; text-transform: uppercase; font-size: 10.5px; }
-@media (max-width: 700px) { .top { grid-template-columns: minmax(0, 1fr); } .status { justify-content: space-between; } }
+/* Hero */
+.hero { min-height: 92vh; display: grid; align-content: center; gap: 22px; padding: 64px 24px 48px; max-width: 1100px; margin: 0 auto; }
+.eyebrow { font: 600 14px var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--child); }
+.hero h1 { font: 700 clamp(44px, 7vw, 88px)/0.95 var(--display); letter-spacing: .02em; text-transform: uppercase; margin: 0; text-wrap: balance; }
+.hero .lede { font-size: clamp(17px, 2vw, 21px); color: var(--muted); max-width: 62ch; margin: 0; }
+.hero .lede b.m { color: var(--family); } .hero .lede b.e { color: var(--eyes); } .hero .lede b.a { color: var(--child); }
+.toc { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+@media (max-width: 760px) { .toc { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.toc a { text-decoration: none; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 2px; transition: border-color .2s, transform .2s; }
+.toc a:hover { border-color: var(--muted); transform: translateY(-2px); }
+.toc b { font: 600 13px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
+.toc span { font: 600 20px/1.2 var(--display); }
+.scrollhint { color: var(--faint); font-size: 14px; }
 
-/* Board */
-.board { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(340px, 1fr); gap: 16px; align-items: start; }
-@media (max-width: 1000px) { .board { grid-template-columns: minmax(0, 1fr); } }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
-.stage { position: relative; padding: 14px 14px 10px; display: grid; gap: 8px; align-content: start; }
-.stage-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; align-items: baseline; }
-h2 { font: 600 15px var(--display); letter-spacing: .12em; text-transform: uppercase; margin: 0; color: var(--muted); }
+/* Story layout */
+.story { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 0 40px; max-width: 1500px; margin: 0 auto; padding: 0 24px; }
+.pin { position: sticky; top: 0; height: 100vh; display: grid; align-content: center; padding: 20px 0; }
+.mapcard { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px 14px; display: grid; gap: 10px; }
+.maphead { display: flex; justify-content: space-between; align-items: end; gap: 12px; flex-wrap: wrap; }
+.chapter { font: 600 13px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.chapter b { color: var(--fg); font-weight: 600; }
+.clock { font: 500 34px/1 var(--mono); font-variant-numeric: tabular-nums; }
+.clock small { display: block; font: 500 10.5px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); text-align: right; margin-bottom: 4px; }
+.caption .who { flex: none; }
+.caption span:last-child { flex: 1; min-width: 0; }
+.caption { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; min-height: 44px; font-size: 14.5px; display: flex; gap: 10px; align-items: center; }
 svg { width: 100%; height: auto; display: block; }
-.ticker { display: flex; gap: 10px; align-items: center; background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; min-height: 42px; }
-.ticker span:last-child { font-weight: 500; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: 12.5px; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .sw { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
-
-/* Investigation log */
-.log { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 760px; }
-@media (max-width: 1000px) { .log { height: 640px !important; } }
-.log-head { padding: 14px 16px 10px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; }
-.log-head .count { font: 500 12.5px var(--mono); color: var(--muted); }
-.entries { position: relative; overflow-y: auto; padding: 10px; display: grid; gap: 6px; align-content: start; }
-.entry { border: 1px solid transparent; border-radius: 8px; padding: 8px 10px; display: grid; gap: 10px; cursor: pointer; }
-.entry:hover { background: var(--raise); }
-.entry[hidden] { display: none; }
-.entry .line { display: grid; grid-template-columns: 62px 10px minmax(0, 1fr); gap: 8px; align-items: baseline; font-size: 13.5px; }
-.entry .t { font: 500 12px var(--mono); color: var(--faint); }
-.entry .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); align-self: center; }
-.entry.map .dot { background: var(--family); } .entry.eyes .dot { background: var(--eyes); } .entry.agent .dot { background: var(--child); } .entry.alert .dot { background: var(--alert); }
-.entry .ttl { color: var(--muted); }
-.entry.cur { background: var(--raise); border-color: var(--line); cursor: default; padding: 12px 14px; }
-.entry.cur .ttl { color: var(--fg); font: 600 21px/1.15 var(--display); letter-spacing: .01em; }
-.entry.cur .line { grid-template-columns: minmax(0, 1fr); gap: 6px; }
-.entry.cur .t, .entry.cur .dot { display: none; }
-.entry.next { opacity: .35; }
-.body { display: grid; gap: 10px; }
-.body p { margin: 0; }
-.who { justify-self: start; font: 600 12px var(--display); letter-spacing: .14em; text-transform: uppercase; padding: 2px 9px; border-radius: 4px; }
+.steps { padding: 18vh 0 30vh; display: grid; gap: 0; }
+.part { min-height: 60vh; display: grid; align-content: center; gap: 10px; padding: 12vh 0 6vh; }
+.part .num { font: 600 15px var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--child); }
+.part h2 { font: 700 clamp(36px, 4.4vw, 56px)/1 var(--display); text-transform: uppercase; letter-spacing: .02em; margin: 0; }
+.part p { color: var(--muted); font-size: 18px; margin: 0; max-width: 56ch; }
+.step { min-height: 78vh; display: grid; align-content: center; padding: 6vh 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; display: grid; gap: 14px; opacity: .45; transform: translateY(12px); transition: opacity .5s, transform .5s, border-color .5s; }
+.step.on .card { opacity: 1; transform: none; border-color: color-mix(in srgb, var(--muted) 55%, var(--line)); }
+.card .meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.card .time { font: 500 14px var(--mono); color: var(--muted); }
+.card h3 { font: 600 clamp(24px, 2.4vw, 31px)/1.12 var(--display); margin: 0; letter-spacing: .01em; text-wrap: balance; }
+.card p { margin: 0; }
+.muted { color: var(--muted); }
+.who { justify-self: start; font: 600 12.5px var(--display); letter-spacing: .14em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; background: var(--raise); color: var(--muted); }
 .who.map { background: color-mix(in srgb, var(--family) 18%, transparent); color: var(--family); }
 .who.eyes { background: color-mix(in srgb, var(--eyes) 18%, transparent); color: var(--eyes); }
 .who.agent { background: color-mix(in srgb, var(--child) 18%, transparent); color: var(--child); }
 .who.alert { background: color-mix(in srgb, var(--alert) 22%, transparent); color: var(--alert); }
-.muted { color: var(--muted); }
-.k { color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; }
-.report { background: var(--panel2); border: 1px dashed var(--line); border-radius: 6px; padding: 10px 12px; display: grid; gap: 6px; margin: 0; }
-.report div { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 8px; }
-.report dd { margin: 0; font: 13px var(--mono); }
-.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
-.chip { font: 500 12px var(--mono); border: 1px solid var(--line); border-radius: 4px; padding: 2px 7px; background: var(--panel2); color: var(--muted); opacity: 0; transform: translateY(4px); animation: in .35s forwards; }
+.who.story { background: var(--raise); color: var(--fg); }
+.k { color: var(--muted); font: 600 12px var(--display); letter-spacing: .14em; text-transform: uppercase; }
+.vid { width: 100%; border-radius: 8px; aspect-ratio: 16 / 9; background: #000; display: block; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 12.5px var(--mono); border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; background: var(--panel2); color: var(--muted); }
 .chip.has { border-color: var(--fg); color: var(--fg); }
 .chip.ask { border-color: var(--eyes); color: var(--fg); }
-@keyframes in { to { opacity: 1; transform: none; } }
-.qs { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; }
-.qs li::marker { color: var(--eyes); font-family: var(--mono); }
-details { font-size: 13px; color: var(--muted); }
-details pre { white-space: pre-wrap; font: 12px/1.5 var(--mono); background: var(--panel2); padding: 10px; border-radius: 4px; border: 1px solid var(--line); }
-.answers { display: grid; gap: 8px; }
-.ans { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 10px; background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 8px; transition: border-color .3s, opacity .3s; }
-.ans img { width: 112px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 4px; display: block; }
-.ans .txt { display: grid; gap: 3px; font-size: 12.5px; min-width: 0; }
-.ans b { font: 600 15px var(--display); letter-spacing: .04em; }
-.ans q { quotes: "“" "”"; }
-.ans.pick { border-color: var(--ok); } .ans.sep { border-color: var(--alert); } .ans.rej { opacity: .55; }
-.verdict { display: flex; flex-wrap: wrap; gap: 4px; }
-.v { font: 600 11px var(--mono); padding: 1px 6px; border-radius: 3px; background: var(--zone); color: var(--muted); }
+.report { background: var(--panel2); border: 1px dashed var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; margin: 0; }
+.report div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; }
+.report dd { margin: 0; font: 14px var(--mono); }
+.prompt, .reply { border-radius: 8px; padding: 12px 14px; font: 13.5px/1.55 var(--mono); white-space: pre-wrap; word-break: break-word; margin: 0; }
+.prompt { background: color-mix(in srgb, var(--eyes) 9%, var(--panel2)); border: 1px solid color-mix(in srgb, var(--eyes) 40%, var(--line)); }
+.reply { background: var(--panel2); border: 1px solid var(--line); }
+.dir { font: 600 12px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--eyes); display: flex; gap: 8px; align-items: center; }
+.dir.back { color: var(--fg); }
+.qlist { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; counter-reset: q; }
+.qlist li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 8px; align-items: start; }
+.qlist li::before { counter-increment: q; content: "Q" counter(q); font: 600 12px var(--mono); color: var(--eyes); padding-top: 13px; }
+.clipqa { display: grid; gap: 10px; background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.clipqa.pick { border-color: var(--ok); } .clipqa.sep { border-color: var(--alert); } .clipqa.rej { border-color: var(--faint); }
+.cliphead { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 12px; align-items: center; }
+.cliphead img { width: 132px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 6px; display: block; }
+.cliphead b { font: 600 19px var(--display); letter-spacing: .03em; display: block; }
+.answers { display: grid; gap: 6px; }
+.answers div { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 8px; font-size: 14.5px; }
+.answers div::before { content: attr(data-q); font: 600 12px var(--mono); color: var(--eyes); padding-top: 2px; }
+.answers q { quotes: "“" "”"; }
+.verdict { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.v { font: 600 11.5px var(--mono); padding: 2px 7px; border-radius: 3px; background: var(--zone); color: var(--muted); }
 .v.y { color: var(--bg); background: var(--ok); } .v.a { color: var(--bg); background: var(--child); } .v.r { color: var(--bg); background: var(--alert); }
-.vid { width: 100%; border-radius: 6px; aspect-ratio: 16 / 9; background: #000; display: block; }
-.alertbox { border: 1px solid var(--alert); background: color-mix(in srgb, var(--alert) 12%, var(--panel)); border-radius: 6px; padding: 10px 12px; font-size: 14px; }
-.stat { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.stat div { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
-.stat b { display: block; font: 600 24px var(--display); }
-.thinking { display: inline-flex; gap: 4px; margin-left: 6px; vertical-align: middle; }
-.thinking i { width: 6px; height: 6px; border-radius: 50%; background: var(--eyes); animation: dotb 1s infinite; }
-.thinking i:nth-child(2) { animation-delay: .15s; } .thinking i:nth-child(3) { animation-delay: .3s; }
-@keyframes dotb { 50% { opacity: .2; transform: translateY(-3px); } }
+.decision { font-size: 15px; color: var(--fg); }
+.decision b { color: var(--child); }
+.flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.flow div { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+.flow b { display: block; font: 600 16px var(--display); letter-spacing: .04em; }
+@media (max-width: 600px) { .flow { grid-template-columns: minmax(0, 1fr); } }
+.tags { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.tags figure { margin: 0; background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.tags img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; }
+.tags figcaption { padding: 6px 8px; font: 12px/1.45 var(--mono); color: var(--muted); }
+.alertbox { border: 1px solid var(--alert); background: color-mix(in srgb, var(--alert) 12%, var(--panel)); border-radius: 8px; padding: 12px 14px; }
+.stat { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.stat div { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.stat b { display: block; font: 600 26px/1.15 var(--display); }
+ul.plain { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
 
-/* Dock: controls + chapter timeline */
-.dock { padding: 12px 14px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center; }
-@media (max-width: 700px) { .dock { grid-template-columns: minmax(0, 1fr); } }
-.wrap > *, .dock > *, .board > *, .top > * { min-width: 0; }
-.btns { display: flex; gap: 8px; }
-button { font: 600 13px var(--body); color: var(--fg); background: var(--raise); border: 1px solid var(--line); border-radius: 6px; padding: 8px 14px; cursor: pointer; }
-button:hover { border-color: var(--muted); }
-button.primary { background: var(--child); color: var(--bg); border-color: var(--child); min-width: 96px; }
-button:focus-visible, .entry:focus-visible, .clip:focus-visible { outline: 2px solid var(--child); outline-offset: 2px; }
-.timeline { display: flex; gap: 6px; min-width: 0; overflow-x: auto; padding-bottom: 2px; }
-.chap { flex: var(--n) 1 0; min-width: 96px; display: grid; gap: 5px; }
-.chap .name { font: 600 12px var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.chap.on .name { color: var(--child); } .chap.done .name { color: var(--muted); }
-.ticks { display: flex; gap: 2px; }
-.ticks button { flex: 1; height: 9px; padding: 0; border: 0; border-radius: 2px; background: var(--line); min-width: 4px; }
-.ticks button.done { background: var(--muted); } .ticks button.on { background: var(--child); }
-
-/* Footage strip */
-.footage { padding: 14px; display: grid; gap: 10px; }
-.clips { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
-.clip { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; display: grid; cursor: pointer; transition: border-color .3s, opacity .3s, transform .3s; text-align: left; padding: 0; font: inherit; color: inherit; }
-.clip:hover { transform: translateY(-2px); }
-.clip .media { position: relative; aspect-ratio: 16 / 9; background: #000; }
-.clip img, .clip video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-.clip .cap { padding: 7px 9px; display: grid; gap: 2px; font-size: 12.5px; }
-.clip .cap b { font: 600 15px var(--display); letter-spacing: .04em; }
-.badge { position: absolute; left: 6px; top: 6px; font: 600 11px var(--mono); padding: 2px 6px; border-radius: 3px; background: rgba(11, 20, 24, .85); color: var(--muted); }
-.clip.s-asked { border-color: var(--eyes); } .clip.s-asked .badge { color: var(--eyes); }
-.clip.s-family { border-color: var(--family); } .clip.s-family .badge { background: var(--family); color: var(--bg); }
-.clip.s-sep { border-color: var(--alert); } .clip.s-sep .badge { background: var(--alert); color: var(--bg); }
-.clip.s-child { border-color: var(--child); } .clip.s-child .badge { background: var(--child); color: var(--bg); }
-.clip.s-rej { opacity: .6; } .clip.s-rej .badge { background: var(--faint); color: var(--bg); }
-.clip.s-none { opacity: .5; }
-.clip.focus { box-shadow: 0 0 0 2px var(--fg); }
-
-/* How it works + footer */
-.how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-@media (max-width: 900px) { .how { grid-template-columns: minmax(0, 1fr); } }
-.how .panel { padding: 14px 16px; }
-.how h3 { font: 600 20px var(--display); margin: 6px 0 4px; }
-.how p { margin: 0; color: var(--muted); font-size: 14px; }
-footer { color: var(--muted); font-size: 13px; }
-kbd { font: 12px var(--mono); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; }
+/* Narrow screens: the map pins to the top, the story scrolls under it. */
+@media (max-width: 980px) {
+  .story { grid-template-columns: minmax(0, 1fr); padding: 0 16px; }
+  .pin { height: auto; top: 0; z-index: 2; padding: 8px 0; background: var(--bg); }
+  .mapcard { padding: 10px 12px; gap: 6px; }
+  .legend, .caption { display: none; }
+  .clock { font-size: 24px; }
+  .steps { padding-top: 4vh; }
+  .step { min-height: auto; padding: 4vh 0; }
+  .hero { padding: 40px 16px; }
+}
+.story > * { min-width: 0; }
 
 /* SVG */
 .zone { fill: var(--zone); stroke: var(--line); stroke-width: 1.5; }
@@ -166,89 +143,73 @@ kbd { font: 12px var(--mono); border: 1px solid var(--line); border-radius: 3px;
 .cam.kid { fill: var(--child); stroke: var(--child); }
 .cam.rej { stroke-dasharray: 3 3; }
 .camid { fill: var(--fg); font: 500 12px var(--mono); pointer-events: none; }
+.tag { font: 500 11px var(--mono); fill: var(--eyes); paint-order: stroke; stroke: var(--bg); stroke-width: 4px; }
 .reach { fill: none; stroke: var(--family); stroke-width: 6; opacity: .35; stroke-linecap: round; }
 .reach.kid { stroke: var(--child); }
 .glow { fill: var(--family); opacity: .18; }
 .glow.kid { fill: var(--child); }
 .cand { fill: none; stroke: var(--eyes); stroke-width: 3; }
 .wlabel { font: 500 11px var(--mono); fill: var(--fg); paint-order: stroke; stroke: var(--bg); stroke-width: 4px; }
-.leg { fill: none; stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; }
-.leg.fam { stroke: var(--family); }
-.leg.kid { stroke: var(--child); stroke-dasharray: 2 9; }
+.leg, .trail { fill: none; stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; }
+.leg.fam, .trail.fam { stroke: var(--family); }
+.leg.kid, .trail.kid { stroke: var(--child); stroke-dasharray: 2 9; }
+.trail.fam { opacity: .75; }
 .draw { transition: stroke-dashoffset 1.6s ease-in-out; }
 .sepring { fill: none; stroke: var(--alert); stroke-width: 4; }
 .burst { fill: none; stroke: var(--alert); stroke-width: 3; animation: burst 1.4s ease-out 2; transform-box: fill-box; transform-origin: center; }
 .pulse { fill: none; stroke: var(--child); stroke-width: 3; animation: burst 1.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes burst { from { opacity: 1; transform: scale(.5); } to { opacity: 0; transform: scale(2.6); } }
 .xmark { stroke: var(--alert); stroke-width: 3; stroke-linecap: round; }
-.pin { font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; paint-order: stroke; stroke: var(--bg); stroke-width: 4px; }
+.label { font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; paint-order: stroke; stroke: var(--bg); stroke-width: 4px; }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <h1>Lost &amp; Found</h1>
-      <p>A replay of a real run: the <b class="m">camera map</b> says where to look, <b class="e">CreativAI</b> looks, the <b class="a">agent</b> joins the dots.</p>
-    </div>
-    <div class="status">
-      <span class="phase" id="phase">The report</span>
-      <div class="clock"><small>Mall time</small><b id="clock">13:58:00</b></div>
-    </div>
-  </header>
 
-  <div class="board">
-    <section class="panel stage" aria-label="Mall map">
-      <div class="stage-head"><h2>Al-Noor Mall · ground floor</h2><span class="muted" style="font-size:12.5px">12 cameras · walkways in metres</span></div>
-      <div class="ticker" id="ticker" aria-live="polite"></div>
-      <svg id="plan" viewBox="0 0 1040 640" role="img" aria-label="Floor plan with cameras, walkways and the agent's progress"></svg>
+<header class="hero">
+  <span class="eyebrow">Case study · AI agent + video understanding</span>
+  <h1>Lost &amp; Found</h1>
+  <p class="lede">A six-year-old disappears in a busy mall. From nothing but the parents' description, an agent follows the family across the security cameras and finds where the boy was lost and where he is now. A <b class="m">camera map</b> decides where to look, <b class="e">CreativAI</b> watches only that footage, and the <b class="a">agent</b> joins the dots. Everything below is a replay of a real run, including every prompt sent to CreativAI and every answer it gave.</p>
+  <nav class="toc" aria-label="Contents">
+    <a href="#part-1"><b>Part 1</b><span>What happened</span></a>
+    <a href="#part-2"><b>Part 2</b><span>The Eyes: CreativAI</span></a>
+    <a href="#part-3"><b>Part 3</b><span>The investigation</span></a>
+    <a href="#part-4"><b>Part 4</b><span>The result</span></a>
+  </nav>
+  <span class="scrollhint">Scroll down. The map on the left follows the story.</span>
+</header>
+
+<div class="story">
+  <aside class="pin" aria-label="Mall map">
+    <div class="mapcard">
+      <div class="maphead">
+        <div><div class="chapter" id="chapter">Al-Noor Mall · ground floor</div></div>
+        <div class="clock"><small>Mall time</small><span id="clock">14:00:00</span></div>
+      </div>
+      <div class="caption" id="caption">12 security cameras, joined by walkways of known length.</div>
+      <svg id="plan" viewBox="0 0 1040 640" role="img" aria-label="Ground-floor map with the 12 cameras, walkways and the story so far"></svg>
       <div class="legend">
         <span><i class="sw" style="background:var(--family)"></i>Family</span>
-        <span><i class="sw" style="background:var(--child)"></i>Child</span>
+        <span><i class="sw" style="background:var(--child)"></i>Boy</span>
         <span><i class="sw" style="border:3px solid var(--eyes)"></i>Clip sent to CreativAI</span>
         <span><i class="sw" style="border:2px solid var(--fg)"></i>Camera with footage</span>
         <span><i class="sw" style="border:3px solid var(--alert)"></i>Separation</span>
       </div>
-    </section>
-
-    <section class="panel log" aria-label="Investigation log">
-      <div class="log-head"><h2>Investigation log</h2><span class="count" id="count"></span></div>
-      <div class="entries" id="entries"></div>
-    </section>
-  </div>
-
-  <section class="panel dock" aria-label="Replay controls">
-    <div class="btns">
-      <button id="prev" type="button" aria-label="Previous step">◀</button>
-      <button id="play" type="button" class="primary">▶ Play</button>
-      <button id="next" type="button" aria-label="Next step">▶</button>
     </div>
-    <div class="timeline" id="timeline" role="group" aria-label="Chapters and steps"></div>
-  </section>
-
-  <section class="panel footage" aria-label="Footage">
-    <div class="stage-head"><h2>The footage</h2><span class="muted" style="font-size:12.5px">every clip the system had, and what happened to it · click to play</span></div>
-    <div class="clips" id="clips"></div>
-  </section>
-
-  <section class="how" aria-label="How it works">
-    <div class="panel"><span class="who map">The Map</span><h3>Where could they be?</h3><p>Our own code, no AI. It knows the 12 cameras, the walkways between them in metres, and that adults walk 0.6–1.8 m/s and children 0.4–1.6 m/s. From one sighting it works out which cameras are reachable next and in which minutes. Footage outside those windows is never looked at.</p></div>
-    <div class="panel"><span class="who eyes">The Eyes · CreativAI</span><h3>What is in this clip?</h3><p>For the clips the Map picked, CreativAI builds a data plate and answers three questions per clip: is the family here, is the child with them or alone, and at what second does the child walk away? The answers are cached, so a replay costs nothing.</p></div>
-    <div class="panel"><span class="who agent">The agent</span><h3>Join the dots</h3><p>It follows the family in time order until the child walks away, then follows the child, counting only sightings where the child is alone. Lookalikes with adults are ruled out. Every move is checked against walking speed. Then it alerts the nearest guard.</p></div>
-  </section>
-
-  <footer>Footage is AI-generated for this demo (Kling via Higgsfield); the agent's run and CreativAI's answers are real. Code, tutorial and honest limits: <a href="https://github.com/sahliadem0106/newnew">github.com/sahliadem0106/newnew</a>. <kbd>←</kbd> <kbd>→</kbd> step · <kbd>space</kbd> play · <code>?step=N</code> opens a step · <code>?play=1</code> autoplays.</footer>
+  </aside>
+  <main class="steps" id="steps"></main>
 </div>
+
+<footer>
+  Footage is AI-generated for this demo (Kling via the Higgsfield API) and the story was staged; the agent's run and CreativAI's answers are real and are stored in CreativAI's data plates for this collection.
+  Code, tutorial and honest limits: <a href="https://github.com/sahliadem0106/newnew">github.com/sahliadem0106/newnew</a>.
+</footer>
 
 <script>
 const CASE = "A";
-// Notes a human added after checking the footage (shown when the agent rules a clip out).
-const NOTES = {
-  A6: "This is the trick clip: a lookalike family, same clothes, boy in red, eating together.",
-};
 const S = 10, O = 20, NS = "http://www.w3.org/2000/svg";
 const $ = id => document.getElementById(id);
 const svg = $("plan");
@@ -258,12 +219,12 @@ const toSec = t => { const p = t.split(":").map(Number); return p[0] * 3600 + (p
 const toClock = s => [Math.floor(s / 3600), Math.floor(s / 60) % 60, Math.round(s % 60)].map(n => String(n).padStart(2, "0")).join(":");
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-let topo, clips, run, cam = {}, camEls = {}, L = {}, scenes = [], idx = 0, playing = false, timer = null, clockNow = toSec("13:58:00"), clockAnim;
+let topo, clips, run, story, cam = {}, camEls = {}, L = {}, steps = [], active = -1, clockNow = toSec("14:00:00"), clockAnim, scenAnim;
 const clipById = id => clips.find(c => c.id === id);
 const media = id => `media/case-${CASE}/${id}`;
 const name = id => cam[id].name;
 
-// ---------------- map ----------------
+// ================= the map =================
 function drawMap() {
   [["Fashion House",12,2,26,22],["TechZone",40,2,20,22],["ToyLand",62,2,26,22],["Main corridor",2,28,96,10],["Food court",2,40,36,18],["Entrance",42,40,16,18],["Info · Security",62,40,14,14],["Restrooms",80,40,12,18]]
     .forEach(([n,x,y,w,hh]) => { el("rect",{class:"zone",x:O+x*S,y:O+y*S,width:w*S,height:hh*S,rx:4}); el("text",{class:"zlabel",x:O+x*S+10,y:O+y*S+22}).textContent = n; });
@@ -274,13 +235,12 @@ function drawMap() {
     el("line",{class:"edge",x1:A.x,y1:A.y,x2:B.x,y2:B.y});
     el("text",{class:"dist",x:(A.x+B.x)/2+6,y:(A.y+B.y)/2-6}).textContent = e.dist_m + " m";
   }
-  L.reach = el("g"); L.legs = el("g"); L.marks = el("g");
-  const withFootage = new Set(clips.map(c => c.camera));
+  L.reach = el("g"); L.trail = el("g"); L.legs = el("g"); L.marks = el("g");
   for (const c of Object.values(cam)) {
-    camEls[c.id] = el("circle",{class:"cam" + (withFootage.has(c.id) ? " has" : ""),cx:c.x,cy:c.y,r:9});
+    camEls[c.id] = el("circle",{class:"cam",cx:c.x,cy:c.y,r:9});
     el("text",{class:"camid",x:c.x+13,y:c.y+18}).textContent = c.id;
   }
-  L.top = el("g"); L.dots = el("g");
+  L.tags = el("g"); L.top = el("g"); L.dots = el("g");
 }
 function route(a, b) {
   const dist = { [a]: 0 }, prev = {}, todo = new Set(Object.keys(cam));
@@ -297,40 +257,95 @@ function route(a, b) {
   return out;
 }
 const ptsOf = ids => ids.map(id => `${cam[id].x},${cam[id].y}`).join(" ");
+function setClock(target, animate) {
+  cancelAnimationFrame(clockAnim);
+  const from = clockNow, t0 = performance.now(), dur = animate && !reduced ? 1400 : 0;
+  (function tick() {
+    const k = dur ? Math.min(1, Math.max(0, (performance.now() - t0) / dur)) : 1;
+    clockNow = from + (target - from) * k;
+    $("clock").textContent = toClock(clockNow);
+    if (k < 1) clockAnim = requestAnimationFrame(tick);
+  })();
+}
 
-// A leg of a path, drawn instantly or animated (line grows, then a dot walks along it).
+// ================= Part 1: the true story, animated from the timeline =================
+// A track is a list of [camera, from, to]. Between two sightings the person walks the shortest route.
+function track(rows) { return rows.map(r => ({ c: r[0], a: toSec(r[1]), b: toSec(r[2]) })); }
+function posAt(tr, t) {
+  if (!tr.length || t < tr[0].a) return null;
+  for (let i = 0; i < tr.length; i++) {
+    const s = tr[i];
+    if (t <= s.b) return { x: cam[s.c].x, y: cam[s.c].y };
+    const n = tr[i + 1];
+    if (n && t < n.a) {
+      const ids = route(s.c, n.c), k = (t - s.b) / (n.a - s.b);
+      const segs = ids.slice(1).map((id, j) => [cam[ids[j]], cam[id]]);
+      const lens = segs.map(([p, q]) => Math.hypot(q.x - p.x, q.y - p.y)), total = lens.reduce((a, b) => a + b, 0);
+      let d = k * total;
+      for (let j = 0; j < segs.length; j++) { if (d <= lens[j]) { const [p, q] = segs[j], f = lens[j] ? d / lens[j] : 0; return { x: p.x + (q.x - p.x) * f, y: p.y + (q.y - p.y) * f }; } d -= lens[j]; }
+      return { x: cam[n.c].x, y: cam[n.c].y };
+    }
+  }
+  const last = tr[tr.length - 1]; return { x: cam[last.c].x, y: cam[last.c].y };
+}
+function trailPts(tr, t) {
+  if (!tr.length || t < tr[0].a) return "";
+  const pts = [];
+  for (let s = tr[0].a; s <= t; s += 4) { const p = posAt(tr, s); if (p) pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`); }
+  const p = posAt(tr, t); if (p) pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`);
+  return pts.join(" ");
+}
+function drawScenario(t, extra) {
+  L.trail.replaceChildren(); L.dots.replaceChildren(); L.marks.replaceChildren();
+  const fam = story.family, kid = story.child, sepT = story.sepT;
+  const famT = trailPts(fam, t);
+  if (famT) el("polyline", { class: "trail fam", points: famT }, L.trail);
+  if (t >= sepT) { const kt = trailPts(kid, t); if (kt) el("polyline", { class: "trail kid", points: kt }, L.trail); }
+  if (t >= sepT) { const c = cam[story.sepCam]; el("circle", { class: "sepring", cx: c.x, cy: c.y, r: 18 }, L.marks); el("text", { class: "label", x: c.x + 24, y: c.y - 24, fill: "var(--alert)" }, L.marks).textContent = "Lost here"; }
+  if (extra?.decoy && t >= story.decoy.a) { const c = cam[story.decoy.c]; el("circle", { cx: c.x + 16, cy: c.y + 14, r: 8, fill: "none", stroke: "var(--muted)", "stroke-width": 2, "stroke-dasharray": "3 3" }, L.marks); el("text", { class: "label", x: c.x + 30, y: c.y + 44, fill: "var(--muted)" }, L.marks).textContent = "Lookalike family"; }
+  const fp = posAt(fam, t), kp = t >= sepT ? posAt(kid, t) : null;
+  if (fp) el("circle", { cx: fp.x, cy: fp.y, r: 10, fill: "var(--family)", stroke: "var(--bg)", "stroke-width": 2 }, L.dots);
+  if (fp && t < sepT) el("circle", { cx: fp.x + 9, cy: fp.y + 8, r: 6, fill: "var(--child)", stroke: "var(--bg)", "stroke-width": 2 }, L.dots); // the boy walking with them
+  if (kp) el("circle", { cx: kp.x, cy: kp.y, r: 8, fill: "var(--child)", stroke: "var(--bg)", "stroke-width": 2 }, L.dots);
+  clockNow = t; $("clock").textContent = toClock(t);
+}
+function playScenario(from, to, extra) {
+  cancelAnimationFrame(scenAnim); cancelAnimationFrame(clockAnim);
+  const t0 = performance.now(), dur = reduced ? 0 : Math.min(3200, 900 + Math.abs(to - from) * 4);
+  (function frame() {
+    const k = dur ? Math.min(1, Math.max(0, (performance.now() - t0) / dur)) : 1;
+    drawScenario(from + (to - from) * (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2), extra);
+    if (k < 1) scenAnim = requestAnimationFrame(frame);
+  })();
+}
+
+// ================= Part 3: map state for the investigation (from the agent's trace) =================
 function leg(cls, from, to, animate) {
-  const ids = route(from, to);
-  const pl = el("polyline", { class: "leg " + cls, points: ptsOf(ids) }, L.legs);
+  const pl = el("polyline", { class: "leg " + cls, points: ptsOf(route(from, to)) }, L.legs);
   if (!animate || reduced) return;
-  const len = pl.getTotalLength();
-  const dash = cls === "kid" ? null : len;
+  const len = pl.getTotalLength(), dash = cls === "kid" ? null : len;
   if (dash) { pl.style.strokeDasharray = `${len}`; pl.style.strokeDashoffset = `${len}`; pl.getBoundingClientRect(); pl.classList.add("draw"); pl.style.strokeDashoffset = "0"; }
   const dot = el("circle", { r: 9, fill: cls === "kid" ? "var(--child)" : "var(--family)", stroke: "var(--bg)", "stroke-width": 2 }, L.dots);
   const t0 = performance.now(), dur = 1600;
   (function step() {
-    if (!pl.isConnected) { dot.remove(); return; } // the map was redrawn (step changed) mid-walk
+    if (!pl.isConnected) { dot.remove(); return; }
     const k = Math.min(1, Math.max(0, (performance.now() - t0) / dur)), p = pl.getPointAtLength(len * (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2));
     dot.setAttribute("cx", p.x); dot.setAttribute("cy", p.y);
     if (k < 1) requestAnimationFrame(step); else { dot.remove(); if (dash) pl.style.strokeDasharray = ""; }
   })();
 }
-
-// What the Map allows: reach lines along walkways, glows on reachable cameras, purple rings on clips to check.
-function showReach(e, animate) {
+function showReach(e) {
   L.reach.replaceChildren();
   const kid = e.who === "child" ? " kid" : "";
   const cands = new Set(e.candidates.map(id => clipById(id).camera));
-  const still = !animate || reduced;
   e.windows.forEach(w => {
     const delay = 120 * (w.hops || 0);
     if (w.via.length > 1) {
       const pl = el("polyline", { class: "reach" + kid, points: ptsOf(w.via) }, L.reach);
-      if (!still) { const len = pl.getTotalLength(); pl.style.strokeDasharray = len; pl.style.strokeDashoffset = len; pl.style.transition = `stroke-dashoffset .8s ease ${delay}ms`; requestAnimationFrame(() => requestAnimationFrame(() => (pl.style.strokeDashoffset = 0))); }
+      if (!reduced) { const len = pl.getTotalLength(); pl.style.strokeDasharray = len; pl.style.strokeDashoffset = len; pl.style.transition = `stroke-dashoffset .8s ease ${delay}ms`; requestAnimationFrame(() => requestAnimationFrame(() => (pl.style.strokeDashoffset = 0))); }
     }
     const c = cam[w.camera];
-    const g = el("circle", { class: "glow" + kid, cx: c.x, cy: c.y, r: 22 }, L.reach);
-    if (!still) { g.style.opacity = 0; g.style.transition = `opacity .4s ease ${delay + 500}ms`; requestAnimationFrame(() => requestAnimationFrame(() => (g.style.opacity = ""))); }
+    el("circle", { class: "glow" + kid, cx: c.x, cy: c.y, r: 22 }, L.reach);
   });
   for (const camId of cands) {
     const c = cam[camId];
@@ -340,305 +355,218 @@ function showReach(e, animate) {
   }
   if (e.from) { const c = cam[e.from.camera]; el("circle", { class: "pulse", cx: c.x, cy: c.y, r: 14, style: `stroke:var(--${e.who === "child" ? "child" : "family"})` }, L.reach); }
 }
-function ringClips(e) {
-  L.reach.replaceChildren();
-  (e.clips || e.results.map(r => r.id)).map(id => clipById(id).camera)
-    .forEach(c => { const p = cam[c]; el("circle", { class: "cand", cx: p.x, cy: p.y, r: 16 }, L.reach); });
-}
+function ringClips(ids) { L.reach.replaceChildren(); ids.map(id => clipById(id).camera).forEach(c => el("circle", { class: "cand", cx: cam[c].x, cy: cam[c].y, r: 16 }, L.reach)); }
 
-// ---------------- scenes ----------------
-const CHAPTERS = [["report", "The report"], ["entry", "Find the family"], ["family", "Follow the family"], ["sep", "Separation"], ["child", "Follow the child"], ["alert", "Alert"]];
-const CH = { entry: "entry", family: "family", child: "child" };
-function buildScenes() {
-  const out = [{ kind: "intro", ch: "report" }];
-  for (const e of run.trace) {
-    if (e.type === "report") continue;
-    if (e.type === "map" && !e.candidates.length) { out.push({ kind: "map-none", e, ch: e.phase }); continue; }
-    if (e.type === "decision") { out.push({ kind: "d-" + e.kind, e, ch: e.kind === "separation" ? "sep" : CH[e.phase] }); continue; }
-    if (e.type === "alert") { out.push({ kind: "alert", e, ch: "alert" }); continue; }
-    out.push({ kind: e.type, e, ch: CH[e.phase] });
-  }
-  return out;
-}
-const DUR = { intro: 9000, map: 7500, "map-none": 5000, ask: 5000, answers: 9500, "d-found": 6000, "d-next": 6500, "d-separation": 9000, "d-reject": 6000, "d-child_alone": 7000, "d-stop": 4000, alert: 12000 };
-
-// Permanent effects of each scene (map paths, markers, clock, clip status), so any step can be rebuilt.
-function effect(st, sc) {
-  const e = sc.e;
-  switch (sc.kind) {
-    case "ask": e.clips.forEach(id => { if (!st.clip[id] || st.clip[id] === "none") st.clip[id] = "asked"; }); break;
-    case "d-found": st.fam = e.camera; st.famCams.add(e.camera); st.clock = toSec(e.time); st.clip[e.clip] = "family"; break;
-    case "d-next": st.famLegs.push([st.fam, e.camera]); st.fam = e.camera; st.famCams.add(e.camera); st.clock = toSec(e.time); st.clip[e.clip] = "family"; break;
-    case "d-separation": st.famLegs.push([st.fam, e.camera]); st.fam = e.camera; st.famCams.add(e.camera); st.sep = e.camera; st.kid = e.camera; st.clock = toSec(e.time); st.clip[e.clip] = "sep"; break;
-    case "d-child_alone": st.kidLegs.push([st.kid, e.camera]); st.kid = e.camera; st.kidCams.add(e.camera); st.clock = toSec(e.time); st.clip[e.clip] = "child"; break;
-    case "d-reject": st.rej.add(e.camera); st.clip[e.clip] = "rej"; break;
-    case "alert": st.now = e.child_now.camera; st.clock = toSec(e.child_now.last_seen); break;
+function invEffect(st, s) {
+  const e = s.e;
+  switch (s.kind) {
+    case "d-found": st.fam = e.camera; st.famCams.add(e.camera); st.clock = toSec(e.time); break;
+    case "d-next": st.famLegs.push([st.fam, e.camera]); st.fam = e.camera; st.famCams.add(e.camera); st.clock = toSec(e.time); break;
+    case "d-separation": st.famLegs.push([st.fam, e.camera]); st.fam = e.camera; st.famCams.add(e.camera); st.sep = e.camera; st.kid = e.camera; st.clock = toSec(e.time); break;
+    case "d-child_alone": st.kidLegs.push([st.kid, e.camera]); st.kid = e.camera; st.kidCams.add(e.camera); st.clock = toSec(e.time); break;
+    case "d-reject": st.rej.add(e.camera); break;
+    case "alert": case "final": st.now = run.child_now.camera; st.clock = toSec(run.child_now.last_seen); break;
   }
 }
-function stateBefore(i) {
-  const st = { famLegs: [], kidLegs: [], famCams: new Set(), kidCams: new Set(), rej: new Set(), clock: toSec("13:58:00"), clip: {} };
-  for (let k = 0; k < i; k++) effect(st, scenes[k]);
+function invState(i) {
+  const st = { famLegs: [], kidLegs: [], famCams: new Set(), kidCams: new Set(), rej: new Set(), clock: toSec(story.reportTime) };
+  for (let k = 0; k <= i; k++) if (steps[k].part >= 3) invEffect(st, steps[k]);
   return st;
 }
-function drawState(st) {
+function drawInv(st) {
   L.legs.replaceChildren(); L.marks.replaceChildren(); L.dots.replaceChildren(); L.top.replaceChildren();
   st.famLegs.forEach(([a, b]) => leg("fam", a, b, false));
   st.kidLegs.forEach(([a, b]) => leg("kid", a, b, false));
-  for (const [id, e] of Object.entries(camEls)) {
-    e.classList.toggle("fam", st.famCams.has(id)); e.classList.toggle("kid", st.kidCams.has(id)); e.classList.toggle("rej", st.rej.has(id));
-  }
+  const has = new Set(clips.map(c => c.camera));
+  for (const [id, e] of Object.entries(camEls)) e.setAttribute("class", "cam" + (has.has(id) ? " has" : "") + (st.famCams.has(id) ? " fam" : "") + (st.kidCams.has(id) ? " kid" : "") + (st.rej.has(id) ? " rej" : ""));
   for (const id of st.rej) { const c = cam[id]; el("path", { class: "xmark", d: `M${c.x - 7},${c.y - 7}L${c.x + 7},${c.y + 7}M${c.x + 7},${c.y - 7}L${c.x - 7},${c.y + 7}` }, L.top); }
-  if (st.sep) { const c = cam[st.sep]; el("circle", { class: "sepring", cx: c.x, cy: c.y, r: 18 }, L.marks); el("text", { class: "pin", x: c.x + 24, y: c.y - 24, fill: "var(--alert)" }, L.marks).textContent = "Separated"; }
+  if (st.sep) { const c = cam[st.sep]; el("circle", { class: "sepring", cx: c.x, cy: c.y, r: 18 }, L.marks); el("text", { class: "label", x: c.x + 24, y: c.y - 24, fill: "var(--alert)" }, L.marks).textContent = "Separated"; }
   if (st.fam && !st.sep) { const c = cam[st.fam]; el("circle", { cx: c.x, cy: c.y, r: 10, fill: "var(--family)", stroke: "var(--bg)", "stroke-width": 2 }, L.dots); }
   if (st.kid && st.kidLegs.length) { const c = cam[st.kid]; el("circle", { cx: c.x, cy: c.y, r: 9, fill: "var(--child)", stroke: "var(--bg)", "stroke-width": 2 }, L.dots); }
-  if (st.now) { const c = cam[st.now]; el("circle", { class: "pulse", cx: c.x, cy: c.y, r: 16 }, L.marks); el("text", { class: "pin", x: c.x - 30, y: c.y + 48, fill: "var(--child)" }, L.marks).textContent = "Child is here"; }
-}
-function setClock(target, animate) {
-  cancelAnimationFrame(clockAnim);
-  const from = clockNow, t0 = performance.now(), dur = animate && !reduced ? 1200 : 0;
-  (function tick() {
-    const k = dur ? Math.min(1, Math.max(0, (performance.now() - t0) / dur)) : 1;
-    clockNow = from + (target - from) * k;
-    $("clock").textContent = toClock(clockNow);
-    if (k < 1) clockAnim = requestAnimationFrame(tick);
-  })();
+  if (st.now) { const c = cam[st.now]; el("circle", { class: "pulse", cx: c.x, cy: c.y, r: 16 }, L.marks); el("text", { class: "label", x: c.x - 30, y: c.y + 48, fill: "var(--child)" }, L.marks).textContent = "Boy is here"; }
 }
 
-// ---------------- the investigation log ----------------
+// ================= the steps =================
 const childWord = { with_family: "with the family", alone: "alone", with_others: "with other adults", absent: "not seen" };
-const shortQ = ["Are these adults in the clip? (yes / no)", "Is the child with them, alone, with other adults, or not there?", "At what second does the child walk away? (number / none)"];
-const walkText = w => w && w.dist_m ? `${w.dist_m} m on foot (${w.via.join(" → ")})` : "";
-const vid = (id, extra = "") => `<video class="vid" muted playsinline loop autoplay preload="auto" poster="${media(id)}.jpg" src="${media(id)}.mp4" ${extra}></video>`;
+const vid = id => `<video class="vid" muted playsinline loop preload="none" poster="${media(id)}.jpg" src="${media(id)}.mp4"></video>`;
+const qlist = () => `<ol class="qlist">${["family", "child", "leaves"].map(k => `<li><pre class="prompt">${esc(run.trace[0].questions[k])}</pre></li>`).join("")}</ol>`;
 
-// Who acts in each scene, the time shown in the log, and a one-line title.
-function meta(sc) {
-  const e = sc.e || {};
-  const clipTime = id => clipById(id).start;
-  switch (sc.kind) {
-    case "intro": return { who: "agent", label: "The report", t: run.report.arrived, title: "A boy is missing. The guard types the parents' description." };
-    case "map": return { who: "map", label: "The Map", t: e.from ? e.from.time : run.report.arrived, title: e.phase === "entry" ? `Check the entrance cameras around ${run.report.arrived}` : `From ${e.from.camera}: ${e.windows.filter(w => w.camera !== e.from.camera).length} reachable cameras, ${e.candidates.length} with footage` };
-    case "map-none": return { who: "map", label: "The Map", t: e.from.time, title: `No more footage reachable from ${e.from.camera}` };
-    case "ask": return { who: "eyes", label: "The Eyes · CreativAI", t: clipTime(e.clips[0]), title: `CreativAI watches ${e.clips.join(", ")}` };
-    case "answers": return { who: "eyes", label: "The Eyes · CreativAI", t: clipTime(e.results[0].id), title: `CreativAI's answers on ${e.results.map(r => r.id).join(", ")}` };
-    case "d-found": return { who: "agent", label: "The agent", t: e.time, title: `Family found at ${e.camera} (${name(e.camera)})` };
-    case "d-next": return { who: "agent", label: "The agent", t: e.time, title: `Family seen at ${e.camera}, child still with them` };
-    case "d-separation": return { who: "alert", label: "Separation", t: e.time, title: `The boy walks away at ${e.camera}, ${e.time}` };
-    case "d-reject": return { who: "agent", label: "The agent", t: e.time, title: `${e.clip} at ${e.camera}: ruled out` };
-    case "d-child_alone": return { who: "agent", label: "The agent", t: e.time, title: `The boy, alone, at ${e.camera} (${name(e.camera)})` };
-    case "d-stop": return { who: "agent", label: "The agent", t: "", title: e.text };
-    case "alert": return { who: "alert", label: "Alert", t: e.child_now.last_seen, title: `Go to ${e.child_now.name}: the boy is there` };
+function buildSteps() {
+  const S1 = [], S2 = [], S3 = [];
+  // ---- Part 1: the scenario ----
+  S1.push({ part: 1, kind: "part", num: "Part 1", title: "What happened", text: "First, the story itself, the way it really unfolded. The system doesn't know any of this yet: it only gets a description from the parents at the end.", map: { mode: "overview" } });
+  S1.push({ part: 1, kind: "scene", who: "story", t: "14:02", title: "A family arrives at the main entrance", html: `<p>A father in a white thobe and red-and-white shemagh carrying a green shopping bag, a mother in a black abaya and grey hijab, and their six-year-old son in a red t-shirt and jeans. Camera ENT-01 films them coming in.</p>${vid("A1")}`, map: { mode: "scenario", from: "14:00:00", to: "14:03:00" }, cap: "The family walks in through the main entrance." });
+  S1.push({ part: 1, kind: "scene", who: "story", t: "14:05 – 14:14", title: "Shopping together at Fashion House", html: `<p>They cross the atrium and the west corridor to a clothing store. The boy stays at his mother's side the whole time (camera STR-A).</p>${vid("A2")}`, map: { mode: "scenario", from: "14:03:00", to: "14:14:00" }, cap: "Fashion House: the boy is still with his parents." });
+  S1.push({ part: 1, kind: "scene", who: "alert", t: "14:16 – 14:19", title: "In the electronics store, the boy walks away", html: `<p>At TechZone both parents get busy at a display table. Nobody notices the boy walk out of the store on his own (camera STR-B).</p>${vid("A3")}`, map: { mode: "scenario", from: "14:14:00", to: "14:19:40" }, cap: "TechZone, around 14:19: the boy leaves alone." });
+  S1.push({ part: 1, kind: "scene", who: "story", t: "14:19 – 14:23", title: "He crosses the atrium and ends up at the food court", html: `<p>He wanders west across the atrium (ATR-01), along the corridor, through the food court seating, and stops, alone and scared, in front of the food counters (FC-02).</p>${vid("A4")}`, map: { mode: "scenario", from: "14:19:40", to: "14:23:00" }, cap: "The boy wanders west to the food court counters." });
+  S1.push({ part: 1, kind: "scene", who: "story", t: "14:23 – 14:24", title: "Meanwhile, a family that looks just like his", html: `<p>At the food court seating (FC-01) another family eats together: same white thobe and red shemagh, a grey hijab, and a boy in red. A search on appearance alone would flag them. That's the trap.</p>${vid("A6")}`, map: { mode: "scenario", from: "14:23:00", to: "14:24:10", decoy: true }, cap: "A lookalike family at the food court seating." });
+  S1.push({ part: 1, kind: "scene", who: "story", t: "14:23 – 14:27", title: "The parents notice, search the wrong way, and go to security", html: `<p>The parents finally look up. They search east, towards the corridor on the other side of the mall, and end up at the Info &amp; Security desk at about 14:26. The boy is on the opposite side, in the west.</p>`, map: { mode: "scenario", from: "14:24:10", to: "14:26:40", decoy: true }, cap: "The parents search east and reach the security desk." });
+  // ---- Part 2: the Eyes ----
+  S2.push({ part: 2, kind: "part", num: "Part 2", title: "The Eyes: CreativAI", text: "Before following the agent, here is the tool it uses to look at footage, and exactly how it talks to it.", map: { mode: "footage" } });
+  S2.push({ part: 2, kind: "scene", who: "eyes", t: "before the case", title: "The footage is already indexed", html: `
+    <p>Every clip from the mall's cameras is uploaded to a CreativAI <b>collection</b> and indexed: CreativAI cuts it into 16-second pieces and turns each one into something it can search and reason about. Each clip is tagged with its camera and start time, so the agent can ask about one camera at one moment.</p>
+    <div class="tags">${clips.map(c => `<figure><img src="${media(c.id)}.jpg" alt="Clip ${c.id}"><figcaption>${c.id} · camera:${c.camera.toLowerCase()}<br>start ${c.start}</figcaption></figure>`).join("")}</div>
+    <p class="muted">In this demo there are ${clips.length} clips from ${new Set(clips.map(c => c.camera)).size} of the 12 cameras (the white rings on the map). A real mall would have every camera, all day.</p>`, map: { mode: "footage" }, cap: "Cameras with indexed footage, tagged by camera and time." });
+  S2.push({ part: 2, kind: "scene", who: "eyes", t: "how we ask", title: "How the agent asks CreativAI a question", html: `
+    <p>CreativAI can answer plain-English questions about clips. The agent puts the clips it wants checked on a <b>data plate</b> (a table of clips) and adds questions as columns. CreativAI watches every clip and fills in an answer for each question.</p>
+    <div class="flow"><div><b>1 · Data plate</b>only the clips the camera map picked</div><div><b>2 · Questions</b>the same three, with the parents' description filled in</div><div><b>3 · Answers</b>one per clip per question, word for word</div></div>
+    <p>These are the exact three questions sent for this case, built from what the parents told the guard:</p>
+    ${qlist()}
+    <p class="muted">The agent asks for answers that start with fixed words ("yes", "alone", a number…) so it can read them reliably, and keeps CreativAI's full sentence as evidence.</p>`, map: { mode: "footage" }, cap: "Each question is asked about each clip the map picks." });
+  S2.push({ part: 2, kind: "scene", who: "map", t: "why a map", title: "Why not just search everything?", html: `
+    <p>Because appearance alone lies: half the mall wears white thobes and black abayas, and there's a lookalike family two cameras away. The <b style="color:var(--family)">camera map</b> knows the walkways in metres and how fast adults (0.6–1.8 m/s) and children (0.4–1.6 m/s) walk. After one sighting, only a few cameras and a few minutes are physically possible, so only that footage goes to CreativAI.</p>`, map: { mode: "graph" }, cap: "Walkways in metres: the map knows who can reach where, and when." });
+  // ---- Part 3: the investigation, from the agent's trace ----
+  S3.push({ part: 3, kind: "part", num: "Part 3", title: "The investigation", text: `It's ${story.reportTime.slice(0, 5)}. The parents are at the Info & Security desk. From here on, everything is the agent's real run: what the map computed, the exact prompts sent to CreativAI, and what it answered.`, map: { mode: "inv-start" } });
+  S3.push({ part: 3, kind: "report", who: "agent", t: story.reportTime.slice(0, 5), title: "The guard types the report", html: `
+    <p>No photo, no names. Just what the parents say, typed into the case console:</p>
+    <dl class="report"><div><dt class="k">Missing child</dt><dd>${esc(run.report.child)}</dd></div><div><dt class="k">Came with</dt><dd>${esc(run.report.family)}</dd></div><div><dt class="k">Arrived</dt><dd>around ${esc(run.report.arrived)}</dd></div></dl>
+    <p class="muted">The agent turns these into the three CreativAI questions from Part 2, and starts.</p>`, cap: "The agent starts from the parents' description." });
+  const tr = run.trace;
+  for (let i = 0; i < tr.length; i++) {
+    const e = tr[i];
+    if (e.type === "report") continue;
+    if (e.type === "map") S3.push({ part: 3, kind: e.candidates.length ? "map" : "map-none", e, who: "map", t: (e.from ? e.from.time : run.report.arrived).slice(0, 5) });
+    else if (e.type === "ask") { S3.push({ part: 3, kind: "qa", e, ans: tr[i + 1], who: "eyes", t: clipById(e.clips[0]).start.slice(0, 5) }); i++; }
+    else if (e.type === "decision") S3.push({ part: 3, kind: "d-" + e.kind, e, who: e.kind === "separation" ? "alert" : "agent", t: (e.time || "").slice(0, 5) });
+    else if (e.type === "alert") S3.push({ part: 3, kind: "alert", e, who: "alert", t: e.child_now.last_seen.slice(0, 5) });
   }
+  return [...S1, ...S2, ...S3, { part: 4, kind: "final", who: "agent", cap: "Where the boy was lost, his path, and where he is now." }];
 }
 
-// The full body of the current step.
-function body(sc) {
-  const e = sc.e || {};
-  switch (sc.kind) {
-    case "intro": return `
-      <p>The parents are at the security desk. All the agent gets is what the guard types: no photo, no names.</p>
-      <dl class="report">
-        <div><dt class="k">Child</dt><dd id="r-child"></dd></div>
-        <div><dt class="k">Came with</dt><dd id="r-fam"></dd></div>
-        <div><dt class="k">Arrived</dt><dd>around ${esc(run.report.arrived)}</dd></div>
-      </dl>
-      <p class="muted">Footage: ${clips.length} clips of 15 s from ${new Set(clips.map(c => c.camera)).size} of the mall's 12 cameras (below the map). Press play, or use the arrow keys.</p>`;
+// Card content for the investigation steps.
+function invCard(s, i) {
+  const e = s.e;
+  switch (s.kind) {
     case "map": {
-      const cands = e.candidates.map(clipById);
-      const reach = e.windows.filter(w => w.camera !== e.from?.camera);
-      if (e.phase === "entry") return `
-        <p>The family arrived around ${esc(run.report.arrived)}, so they must have passed an entrance camera then. The Map checks both entrances, ${e.windows.map(w => w.camera).join(" and ")}, from ${e.windows[0].from.slice(0, 5)} to ${e.windows[0].to.slice(0, 5)}.</p>
-        <div><span class="k">Footage in that window</span><div class="chips">${cands.map((c, i) => `<span class="chip ask" style="animation-delay:${i * 120}ms">${c.id} · ${c.camera} · ${c.start}</span>`).join("")}</div></div>`;
-      return `
-        <p>${e.who === "child"
-          ? "A child walks 0.4–1.6 m/s and may wander, so the Map looks up to 4 cameras away and allows a few extra minutes."
-          : "Adults walk 0.6–1.8 m/s and may spend up to 15 minutes in a shop. The Map looks up to 3 cameras away, because some cameras have no footage at that moment."}
-        Only footage inside these windows goes to CreativAI; everything else is never looked at.</p>
-        <div><span class="k">Reachable cameras and when</span><div class="chips">${reach.map((w, i) => `<span class="chip ${cands.some(c => c.camera === w.camera) ? "has" : ""}" style="animation-delay:${i * 60}ms">${w.camera} ${w.from.slice(0, 5)}–${w.to.slice(0, 5)}</span>`).join("")}</div></div>
-        <div><span class="k">Sent to CreativAI</span><div class="chips">${cands.map((c, i) => `<span class="chip ask" style="animation-delay:${400 + i * 120}ms">${c.id} · ${c.camera} · ${c.start}</span>`).join("")}</div></div>`;
+      const cands = e.candidates.map(clipById), reach = e.windows.filter(w => w.camera !== e.from?.camera);
+      if (e.phase === "entry") return { title: "Where to look first: the entrances", cap: "The map checks the two entrance cameras around the arrival time.", html: `
+        <p>The parents said they arrived around ${esc(run.report.arrived)}, so the family must have passed an entrance camera then. The map checks both entrances, ${e.windows.map(w => w.camera).join(" and ")}, from ${e.windows[0].from.slice(0, 5)} to ${e.windows[0].to.slice(0, 5)}.</p>
+        <div><span class="k">Footage in that window → sent to CreativAI</span><div class="chips" style="margin-top:6px">${cands.map(c => `<span class="chip ask">${c.id} · ${c.camera} · ${c.start}</span>`).join("")}</div></div>` };
+      return { title: `From ${name(e.from.camera)} at ${e.from.time.slice(0, 5)}: where could ${e.who === "child" ? "the boy" : "they"} go next?`, cap: `${reach.length} reachable cameras, ${cands.length} with footage in the time window.`, html: `
+        <p>${e.who === "child" ? "A child walks 0.4–1.6 m/s and may wander, so the map looks up to 4 cameras away and allows a few extra minutes." : "Adults walk 0.6–1.8 m/s and may spend up to 15 minutes in a shop. The map looks up to 3 cameras away, because some cameras have no footage at that moment."} It finds <b>${reach.length} reachable cameras</b>, each with its own time window. Only footage inside a window is sent to CreativAI.</p>
+        <div><span class="k">Reachable cameras and when</span><div class="chips" style="margin-top:6px">${reach.map(w => `<span class="chip ${cands.some(c => c.camera === w.camera) ? "has" : ""}">${w.camera} ${w.from.slice(0, 5)}–${w.to.slice(0, 5)}</span>`).join("")}</div></div>
+        <div><span class="k">Footage inside a window → sent to CreativAI</span><div class="chips" style="margin-top:6px">${cands.map(c => `<span class="chip ask">${c.id} · ${c.camera} · ${c.start}</span>`).join("")}</div></div>` };
     }
-    case "map-none": return `<p>No camera the child could have reached after ${e.from.time.slice(0, 5)} has footage in its window. So ${esc(name(e.from.camera))} is the last place the child was seen.</p>`;
-    case "ask": return `
-      <p>The agent puts ${e.clips.length === 1 ? "this clip" : "these clips"} on a CreativAI data plate and asks the same three questions about each, with the guard's descriptions filled in: <span class="thinking" aria-label="working"><i></i><i></i><i></i></span></p>
-      <ol class="qs">${shortQ.map(q => `<li>${q}</li>`).join("")}</ol>
-      <details><summary>Exact questions sent</summary><pre>${esc(Object.values(run.trace[0].questions).join("\n\n"))}</pre></details>`;
-    case "answers": return `
-      <p class="muted">Word for word from CreativAI, then read by the agent as simple flags.</p>
-      <div class="answers">${e.results.map(r => `
-        <div class="ans" data-clip="${r.id}">
-          <img src="${media(r.id)}.jpg" alt="Clip ${r.id}">
-          <div class="txt"><b>${r.id} · ${r.camera} · ${r.time.slice(0, 5)}</b>
-            <span><span class="k">Family?</span> <q data-t="${esc(r.why.family)}"></q></span>
-            <span><span class="k">Child?</span> <q data-t="${esc(r.why.child)}"></q></span>
-            <span><span class="k">Walks away?</span> <q data-t="${esc(r.why.leaves)}"></q></span>
-            <div class="verdict"><span class="v ${r.family ? "y" : ""}">family: ${r.family ? "yes" : "no"}</span><span class="v ${r.child === "alone" ? "a" : r.child === "with_family" ? "y" : ""}">child: ${childWord[r.child]}</span>${r.leaves !== null ? `<span class="v r">leaves at ${r.leaves} s</span>` : ""}</div>
-          </div>
-        </div>`).join("")}</div>`;
-    case "d-found": return `<p>CreativAI saw the two adults in clip ${e.clip}, with the boy <b>${childWord[e.child]}</b>. This is the first point of the family's path; from here the agent follows them forward in time.</p>${vid(e.clip)}`;
-    case "d-next": return `<p>The family is in clip ${e.clip} at ${esc(name(e.camera))}, and the boy is still <b>${childWord[e.child]}</b>. It's ${walkText(e.walk)} from the last sighting, an easy walk in that time.</p>${vid(e.clip)}`;
-    case "d-separation": return `<p>The agent reads the family's footage in time order. ${e.clip} is the earliest clip where CreativAI says the child walks away from the adults, ${e.offset} seconds in. That's where he was lost: <b style="color:var(--alert)">${esc(name(e.camera))}, ${e.time}</b>.</p>${vid(e.clip, 'id="sepvid" controls')}<p class="muted">The video starts just before the moment CreativAI pointed to.</p>`;
-    case "d-reject": return `<p>CreativAI saw ${esc(e.text)}. A lost child is alone, so this sighting doesn't extend the boy's path.${NOTES[e.clip] ? " " + NOTES[e.clip] : ""}</p>${vid(e.clip)}`;
-    case "d-child_alone": return `<p>Clip ${e.clip} at ${esc(name(e.camera))} shows the boy with no adult. It's ${walkText(e.walk)} from his last known spot, at about ${e.walk.speed} m/s: a slow, wandering child's pace. It fits.</p>${vid(e.clip)}`;
-    case "d-stop": return "";
-    case "alert": {
-      const rounds = run.trace.filter(x => x.type === "ask").length;
+    case "map-none": return { title: `No more footage reachable from ${name(e.from.camera)}`, cap: "Nothing left to check: the last sighting stands.", html: `<p>No camera the boy could have reached after ${e.from.time.slice(0, 5)} has footage in its window. ${esc(name(e.from.camera))} is the last place he was seen.</p>` };
+    case "qa": {
+      const marks = {};
+      for (let k = i + 1; k < steps.length && steps[k].kind.startsWith("d-"); k++) { const d = steps[k].e; marks[d.clip] = d.kind === "separation" ? "sep" : d.kind === "reject" ? "rej" : "pick"; }
+      return { title: `Asking CreativAI about ${e.clips.length === 1 ? "clip " + e.clips[0] : e.clips.length + " clips: " + e.clips.join(", ")}`, cap: `CreativAI watches ${e.clips.join(", ")} and answers the three questions.`, html: `
+        <div class="dir">→ Prompt sent to CreativAI</div>
+        <p class="muted" style="font-size:14.5px">A data plate with ${e.clips.join(", ")}, and these three questions for each clip:</p>
+        ${qlist()}
+        <div class="dir back">← CreativAI's answers, word for word</div>
+        ${s.ans.results.map(r => `
+          <div class="clipqa ${marks[r.id] || ""}">
+            <div class="cliphead"><img src="${media(r.id)}.jpg" alt="Clip ${r.id}"><div><b>${r.id} · ${r.camera}</b><span class="muted">${esc(name(r.camera))} · ${r.time}</span></div></div>
+            <div class="answers"><div data-q="Q1"><q>${esc(r.why.family)}</q></div><div data-q="Q2"><q>${esc(r.why.child)}</q></div><div data-q="Q3"><q>${esc(r.why.leaves)}</q></div></div>
+            <div class="verdict"><span class="k" style="margin-right:4px">Agent reads</span><span class="v ${r.family ? "y" : ""}">family: ${r.family ? "yes" : "no"}</span><span class="v ${r.child === "alone" ? "a" : r.child === "with_family" ? "y" : ""}">child: ${childWord[r.child]}</span>${r.leaves !== null ? `<span class="v r">walks away at ${r.leaves} s</span>` : ""}</div>
+          </div>`).join("")}` };
+    }
+    case "d-found": return { title: `Family found at the ${name(e.camera).toLowerCase()}, ${e.time.slice(0, 5)}`, cap: `First sighting: ${e.camera} at ${e.time.slice(0, 5)}, boy with them.`, html: `<p class="decision">CreativAI said yes to the adults in clip ${e.clip}, with the boy <b>${childWord[e.child]}</b>. This is the first point of the family's path. From here the agent follows them forward in time.</p>${vid(e.clip)}` };
+    case "d-next": return { title: `Next sighting: ${name(e.camera)}, ${e.time.slice(0, 5)}`, cap: `Family at ${e.camera}, boy still with them.`, html: `<p class="decision">The family is in clip ${e.clip}, and the boy is still <b>${childWord[e.child]}</b>. It's ${e.walk.dist_m} m on foot (${e.walk.via.join(" → ")}) from the last sighting, an easy walk in that time.</p>${vid(e.clip)}` };
+    case "d-separation": return { title: `The boy walks away at ${name(e.camera)}, ${e.time}`, cap: `Separation: ${e.camera}, ${e.time}.`, html: `<p class="decision">Reading the family's footage in time order, ${e.clip} is the first clip where CreativAI says the child walks away from the adults: <b style="color:var(--alert)">${e.offset} seconds in, at ${e.time}</b>. That's where he was lost.</p>${vid(e.clip)}<p class="muted">In the staged story the boy left at about ${toClock(story.sepT)}. The agent's answer is within ${Math.abs(story.sepT - toSec(e.time))} seconds.</p>` };
+    case "d-reject": return { title: `${e.clip} at ${e.camera}: ruled out`, cap: `${e.clip} ruled out: the boy there is with adults.`, html: `<p class="decision">CreativAI saw ${esc(e.text)}. A lost child is alone, so this can't be him.${e.clip === "A6" ? " This is the lookalike family from Part 1: the trap works on appearance, but not on behaviour." : ""}</p>${vid(e.clip)}` };
+    case "d-child_alone": return { title: `The boy, alone, at ${name(e.camera)}`, cap: `Boy alone at ${e.camera}, ${e.time.slice(0, 5)}.`, html: `<p class="decision">Clip ${e.clip} shows the boy with no adult. It's ${e.walk.dist_m} m (${e.walk.via.join(" → ")}) from his last known spot at about ${e.walk.speed} m/s, a slow child's pace, so it's physically possible.</p>${vid(e.clip)}` };
+    case "alert": return { title: `Alert: go to the ${e.child_now.name.toLowerCase()}`, cap: `Alert sent: the boy is at ${e.child_now.camera}.`, html: `<div class="alertbox">${esc(e.text.replace(/^LOST CHILD:\s*/, ""))}</div><p class="muted">The nearest guard gets the location, the path and the clip as proof.</p>` };
+  }
+  return { title: "", html: "", cap: "" };
+}
+
+function renderSteps() {
+  $("steps").innerHTML = steps.map((s, i) => {
+    if (s.kind === "part") return `<section class="part step" id="part-${s.part}" data-i="${i}"><span class="num">${s.num}</span><h2>${s.title}</h2><p>${esc(s.text)}</p></section>`;
+    if (s.kind === "final") {
       const asked = new Set(run.trace.filter(x => x.type === "ask").flatMap(x => x.clips));
-      const path = [e.separation.camera, ...run.child_path.map(c => c.camera)].join(" → ");
-      return `
-        <div class="alertbox">${esc(e.text.replace(/^LOST CHILD:\s*/, ""))}</div>
-        <div class="stat">
-          <div><b>${e.separation.time.slice(0, 5)}</b><span class="muted">lost at ${e.separation.camera}</span></div>
-          <div><b>${e.child_now.camera}</b><span class="muted">child now</span></div>
-          <div><b style="font-size:18px">${path}</b><span class="muted">the boy's path</span></div>
-          <div><b>${asked.size} · ${rounds}</b><span class="muted">clips checked · CreativAI rounds</span></div>
-        </div>
-        <p class="muted">Press <b>↺ Replay</b> to watch again, or click any line in this log.</p>`;
+      const path = [run.separation.camera, ...run.child_path.map(c => c.camera)].join(" → ");
+      return `<section class="part step" id="part-4" data-i="${i}"><span class="num">Part 4</span><h2>The result</h2>
+        <div class="card" style="opacity:1;transform:none">
+          <div class="stat">
+            <div><b>${run.separation.time}</b><span class="muted">lost at ${esc(name(run.separation.camera))}</span></div>
+            <div><b>${esc(run.child_now.name)}</b><span class="muted">where the boy is</span></div>
+            <div><b style="font-size:20px">${path}</b><span class="muted">the boy's path</span></div>
+            <div><b>${asked.size} of ${clips.length}</b><span class="muted">clips checked by CreativAI</span></div>
+          </div>
+          <p>Every sighting matches the staged story: the family's path, the moment the boy walked away, his route to the food court, and the lookalike family ruled out.</p>
+          <ul class="plain muted">
+            <li>The answers shown are the ones CreativAI stored in this collection's data plates; the agent caches them, so a rerun costs nothing.</li>
+            <li>The footage is AI-generated, not real CCTV. Two clips were regenerated after review (a duplicated boy, a person on a counter).</li>
+            <li>The rules were developed on this case; a blind test on a second case was planned but not run.</li>
+          </ul>
+          <p>Code, tutorial and the full plan: <a href="https://github.com/sahliadem0106/newnew">github.com/sahliadem0106/newnew</a></p>
+        </div></section>`;
     }
+    let title = s.title, html = s.html;
+    if (s.part === 3 && s.kind !== "report") { const c = invCard(s, i); title = c.title; html = c.html; s.cap = c.cap; }
+    const label = { story: "What happened", eyes: "The Eyes · CreativAI", map: "The map", agent: "The agent", alert: s.part === 1 ? "What happened" : "Finding" }[s.who];
+    return `<section class="step" data-i="${i}" id="step-${i}"><article class="card">
+      <div class="meta"><span class="who ${s.who}">${label}</span><span class="time">${esc(s.t || "")}</span></div>
+      <h3>${esc(title)}</h3>${html}</article></section>`;
+  }).join("");
+}
+
+// ================= reacting to scroll =================
+const PARTS = { 1: "Part 1 · What happened", 2: "Part 2 · The Eyes", 3: "Part 3 · The investigation", 4: "Part 4 · The result" };
+const CAPWHO = s => s.part === 1 ? ["story", "Story"] : s.part === 2 ? ["eyes", "Eyes"] : s.who === "eyes" ? ["eyes", "CreativAI"] : s.who === "map" ? ["map", "Map"] : s.who === "alert" ? ["alert", "Finding"] : ["agent", "Agent"];
+function activate(i) {
+  if (i === active) return;
+  const prev = active; active = i;
+  const s = steps[i];
+  document.querySelectorAll("#steps .step").forEach(n => n.classList.toggle("on", +n.dataset.i === i));
+  document.querySelectorAll("#steps video").forEach(v => { if (+v.closest(".step").dataset.i === i) { v.preload = "auto"; v.play().catch(() => {}); } else v.pause(); });
+  $("chapter").innerHTML = `<b>${PARTS[s.part]}</b>`;
+  const capText = s.cap || (s.kind === "part" ? s.title : "");
+  const [cw, cl] = CAPWHO(s);
+  $("caption").innerHTML = capText ? `<span class="who ${cw}">${cl}</span><span>${esc(capText)}</span>` : "";
+
+  cancelAnimationFrame(scenAnim);
+  if (s.part <= 2) {
+    const m = s.map || {};
+    L.reach.replaceChildren(); L.legs.replaceChildren(); L.top.replaceChildren(); L.tags.replaceChildren();
+    for (const e of Object.values(camEls)) e.setAttribute("class", "cam");
+    if (m.mode === "scenario") {
+      // Continue from where the previous scene ended when scrolling forward; otherwise start the scene fresh.
+      const fromT = prev === i - 1 && steps[prev].map?.mode === "scenario" ? clockNow : toSec(m.from);
+      playScenario(fromT, toSec(m.to), m);
+    } else if (m.mode === "overview") { L.trail.replaceChildren(); L.dots.replaceChildren(); L.marks.replaceChildren(); setClock(toSec("14:00:00"), true); }
+    else {
+      L.trail.replaceChildren(); L.dots.replaceChildren(); L.marks.replaceChildren();
+      const has = new Set(clips.map(c => c.camera));
+      for (const [id, e] of Object.entries(camEls)) if (has.has(id)) e.classList.add("has");
+      if (m.mode === "footage") clips.forEach(c => { const p = cam[c.camera]; el("text", { class: "tag", x: p.x - 4, y: p.y - 16 }, L.tags).textContent = `${c.id} ${c.start.slice(0, 5)}`; });
+      if (m.mode === "graph") topo.edges.forEach(e => { const A = cam[e.a], B = cam[e.b]; const pl = el("polyline", { class: "reach", points: `${A.x},${A.y} ${B.x},${B.y}` }, L.reach); if (!reduced) { const len = pl.getTotalLength(); pl.style.strokeDasharray = len; pl.style.strokeDashoffset = len; pl.style.transition = "stroke-dashoffset 1s ease"; requestAnimationFrame(() => requestAnimationFrame(() => (pl.style.strokeDashoffset = 0))); } });
+      setClock(toSec(story.reportTime), true);
+    }
+    return;
   }
-}
-
-function typeOut(node, text, ms = 16) {
-  if (!node) return;
-  if (reduced) { node.textContent = text; return; }
-  let i = 0; node.textContent = "";
-  const t = setInterval(() => { if (!node.isConnected) return clearInterval(t); node.textContent = text.slice(0, ++i); if (i >= text.length) clearInterval(t); }, ms);
-}
-
-function renderLog() {
-  const list = $("entries");
-  const items = scenes.map((sc, k) => {
-    const m = meta(sc);
-    const cur = k === idx;
-    const div = document.createElement("div");
-    div.className = `entry ${m.who}${cur ? " cur" : k > idx ? " next" : ""}`;
-    if (k > idx + 1) div.hidden = true; // only show what has happened, plus a hint of what's next
-    div.innerHTML = `<div class="line"><span class="t">${esc((m.t || "").slice(0, 5))}</span><span class="dot"></span><span class="ttl">${esc(m.title)}</span></div>`;
-    if (cur) {
-      div.insertAdjacentHTML("afterbegin", `<span class="who ${m.who}">${m.label}</span>`);
-      div.insertAdjacentHTML("beforeend", `<div class="body">${body(sc)}</div>`);
-    } else {
-      div.tabIndex = 0;
-      div.addEventListener("click", () => { setPlaying(false); go(k); });
-      div.addEventListener("keydown", ev => { if (ev.key === "Enter") { setPlaying(false); go(k); } });
-    }
-    return div;
-  });
-  list.replaceChildren(...items);
-  const cur = list.querySelector(".entry.cur");
-  // Keep the current step at the top of the log (measured on screen, applied instantly).
-  list.scrollTop += cur.getBoundingClientRect().top - list.getBoundingClientRect().top - 8;
-  // Bring the current step to life.
-  const sc = scenes[idx], e = sc.e || {};
-  if (sc.kind === "intro") { typeOut($("r-child"), run.report.child, 22); setTimeout(() => typeOut($("r-fam"), run.report.family, 10), reduced ? 0 : 1800); }
-  cur.querySelectorAll("q[data-t]").forEach((q, i) => setTimeout(() => typeOut(q, q.dataset.t, 12), reduced ? 0 : 300 + i * 400));
-  cur.querySelectorAll("video").forEach(v => v.play().catch(() => {}));
-  if (sc.kind === "answers") {
-    const marks = {};
-    for (let k = idx + 1; k < scenes.length && scenes[k].kind.startsWith("d-"); k++) {
-      const d = scenes[k].e; marks[d.clip] = d.kind === "separation" ? "sep" : d.kind === "reject" ? "rej" : "pick";
-    }
-    setTimeout(() => cur.querySelectorAll(".ans").forEach(a => marks[a.dataset.clip] && a.classList.add(marks[a.dataset.clip])), reduced ? 0 : 2500);
-  }
-  const sv = $("sepvid");
-  if (sv) sv.addEventListener("loadedmetadata", () => { sv.currentTime = Math.max(0, e.offset - 2); sv.play().catch(() => {}); }, { once: true });
-}
-
-// ---------------- footage strip ----------------
-const STATUS = { none: "not checked", asked: "with CreativAI", family: "family seen", sep: "separation", child: "child alone", rej: "ruled out" };
-function buildClips() {
-  $("clips").replaceChildren(...clips.map(c => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "clip s-none"; b.dataset.clip = c.id;
-    b.innerHTML = `<div class="media"><img src="${media(c.id)}.jpg" alt="Clip ${c.id}, camera ${c.camera}"><span class="badge">not checked</span></div><div class="cap"><b>${c.id} · ${c.camera}</b><span class="muted">${esc(name(c.camera))} · ${c.start}</span></div>`;
-    b.addEventListener("click", () => {
-      const m = b.querySelector(".media"), v = m.querySelector("video");
-      if (v) { v.remove(); return; }
-      m.insertAdjacentHTML("afterbegin", `<video muted playsinline controls autoplay src="${media(c.id)}.mp4"></video>`);
-    });
-    return b;
-  }));
-}
-function paintClips(st, focus) {
-  $("clips").querySelectorAll(".clip").forEach(b => {
-    const s = st.clip[b.dataset.clip] || "none";
-    b.className = `clip s-${s}${focus.includes(b.dataset.clip) ? " focus" : ""}`;
-    b.querySelector(".badge").textContent = STATUS[s];
-  });
-}
-
-// ---------------- timeline ----------------
-function buildTimeline() {
-  $("timeline").replaceChildren(...CHAPTERS.map(([key, label]) => {
-    const steps = scenes.map((s, k) => [s, k]).filter(([s]) => s.ch === key);
-    const d = document.createElement("div");
-    d.className = "chap"; d.dataset.ch = key; d.style.setProperty("--n", Math.max(1, steps.length));
-    d.innerHTML = `<span class="name">${label}</span><div class="ticks"></div>`;
-    d.querySelector(".ticks").append(...steps.map(([, k]) => {
-      const b = document.createElement("button");
-      b.type = "button"; b.dataset.k = k; b.title = meta(scenes[k]).title; b.setAttribute("aria-label", `Step ${k + 1}: ${meta(scenes[k]).title}`);
-      b.addEventListener("click", () => { setPlaying(false); go(k); });
-      return b;
-    }));
-    return d;
-  }));
-}
-
-// ---------------- the map side of each step ----------------
-function animateMap(sc) {
-  const e = sc.e || {};
-  if (sc.kind === "map") showReach(e, true);
-  else if (sc.kind === "ask" || sc.kind === "answers") ringClips(e);
+  // Parts 3 and 4: the investigation state up to this step.
+  L.trail.replaceChildren(); L.tags.replaceChildren();
+  const before = invState(i - 1), after = invState(i);
+  drawInv(before);
+  if (s.kind === "map") showReach(s.e);
+  else if (s.kind === "qa") ringClips(s.e.clips);
   else L.reach.replaceChildren();
-  const st = stateBefore(idx);
-  if (sc.kind === "d-next" || sc.kind === "d-separation") leg("fam", st.fam, e.camera, true);
-  if (sc.kind === "d-child_alone") leg("kid", st.kid, e.camera, true);
-  if (sc.kind === "d-separation") { const c = cam[e.camera]; setTimeout(() => el("circle", { class: "burst", cx: c.x, cy: c.y, r: 18 }, L.marks), reduced ? 0 : 1500); }
-  const after = stateBefore(idx + 1);
+  if (s.kind === "d-next" || s.kind === "d-separation") leg("fam", before.fam, s.e.camera, true);
+  if (s.kind === "d-child_alone") leg("kid", before.kid, s.e.camera, true);
+  if (s.kind === "d-separation") { const c = cam[s.e.camera]; setTimeout(() => el("circle", { class: "burst", cx: c.x, cy: c.y, r: 18 }, L.marks), reduced ? 0 : 1500); }
   setClock(after.clock, true);
-  setTimeout(() => { if (scenes[idx] === sc) { const keep = [...L.marks.querySelectorAll(".burst")]; drawState(after); keep.forEach(k => L.marks.appendChild(k)); } }, reduced ? 0 : 1800);
+  setTimeout(() => { if (active === i) { const keep = [...L.marks.querySelectorAll(".burst")]; drawInv(after); keep.forEach(k => L.marks.appendChild(k)); } }, reduced ? 0 : 1800);
 }
 
-function go(i, { animate = true } = {}) {
-  idx = Math.max(0, Math.min(scenes.length - 1, i));
-  const sc = scenes[idx], m = meta(sc), before = stateBefore(idx), after = stateBefore(idx + 1);
-  drawState(before);
-  clockNow = before.clock; $("clock").textContent = toClock(clockNow);
-  if (animate) animateMap(sc);
-  else {
-    drawState(after); setClock(after.clock, false);
-    if (sc.kind === "map") showReach(sc.e, false); else if (sc.kind === "ask" || sc.kind === "answers") ringClips(sc.e); else L.reach.replaceChildren();
-  }
-  $("ticker").innerHTML = `<span class="who ${m.who}">${m.label}</span><span>${esc(m.title)}</span>`;
-  $("phase").textContent = CHAPTERS.find(c => c[0] === sc.ch)[1];
-  $("count").textContent = `step ${idx + 1} / ${scenes.length}`;
-  renderLog();
-  const e = sc.e || {};
-  paintClips(after, e.clips || (e.results || []).map(r => r.id).concat(e.clip ? [e.clip] : []));
-  const at = CHAPTERS.findIndex(c => c[0] === sc.ch);
-  $("timeline").querySelectorAll(".chap").forEach((d, k) => (d.className = "chap" + (k < at ? " done" : k === at ? " on" : "")));
-  $("timeline").querySelectorAll(".ticks button").forEach(b => { const k = +b.dataset.k; b.className = k < idx ? "done" : k === idx ? "on" : ""; });
-  schedule();
+function watch() {
+  // The step whose middle is closest to the middle of the screen is the active one.
+  let ticking = false;
+  const pick = () => {
+    ticking = false;
+    const mid = innerHeight * 0.5;
+    let best = 0, bestD = Infinity;
+    document.querySelectorAll("#steps .step").forEach(n => { const r = n.getBoundingClientRect(); const d = Math.abs(r.top + Math.min(r.height, innerHeight) / 2 - mid); if (d < bestD) { bestD = d; best = +n.dataset.i; } });
+    activate(best);
+  };
+  addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(pick); } }, { passive: true });
+  addEventListener("resize", pick);
+  pick();
 }
-function schedule() {
-  clearTimeout(timer);
-  if (!playing) return;
-  if (idx >= scenes.length - 1) { setPlaying(false); return; }
-  timer = setTimeout(() => go(idx + 1), DUR[scenes[idx].kind] || 6000);
-}
-function setPlaying(p) {
-  playing = p;
-  $("play").textContent = p ? "❚❚ Pause" : idx >= scenes.length - 1 ? "↺ Replay" : "▶ Play";
-  schedule();
-}
-
-$("play").addEventListener("click", () => { if (!playing && idx >= scenes.length - 1) go(0); setPlaying(!playing); });
-$("next").addEventListener("click", () => { setPlaying(false); go(idx + 1); });
-$("prev").addEventListener("click", () => { setPlaying(false); go(idx - 1); });
-document.addEventListener("keydown", ev => {
-  if (ev.target.closest("input, textarea, summary, video")) return;
-  if (ev.key === "ArrowRight") { setPlaying(false); go(idx + 1); }
-  else if (ev.key === "ArrowLeft") { setPlaying(false); go(idx - 1); }
-  else if (ev.key === " ") { ev.preventDefault(); $("play").click(); }
-});
 
 (async () => {
   try {
@@ -648,19 +576,20 @@ document.addEventListener("keydown", ev => {
       fetch(`results/case-${CASE}-run.json`).then(r => r.json()),
     ]);
   } catch (err) {
-    $("entries").innerHTML = `<div class="entry cur"><span class="ttl">Couldn't load the replay data.</span><p class="muted">Open this page through a web server (GitHub Pages, or <code>npm start</code> then <a href="/replay.html">/replay.html</a>), not as a local file. (${esc(err.message)})</p></div>`;
+    $("steps").innerHTML = `<section class="step"><div class="card" style="opacity:1">Couldn't load the replay data. Open this page through a web server (GitHub Pages, or <code>npm start</code> then <a href="/replay.html">/replay.html</a>), not as a local file. (${esc(err.message)})</div></section>`;
     return;
   }
   window.addEventListener("error", ev => console.error("replay error:", ev.message));
+  const c = topo.cases[CASE];
+  const family = track(c.family);
+  const desk = family.find(s => s.c === "INF-01");
+  story = { family, child: track(c.child), sepT: toSec(c.expected.separation[1]), sepCam: c.expected.separation[0], decoy: track(c.decoys)[0], reportTime: toClock(desk.a + 40) };
   drawMap();
-  const fit = () => { if (innerWidth > 1000) document.querySelector(".log").style.height = document.querySelector(".stage").offsetHeight + "px"; };
-  addEventListener("resize", fit); fit();
-  scenes = buildScenes();
-  buildClips();
-  buildTimeline();
-  const q = new URLSearchParams(location.search), step = Number(q.get("step"));
-  go(step ? step - 1 : 0, { animate: !step });
-  if (q.get("play") === "1") setPlaying(true);
+  steps = buildSteps();
+  renderSteps();
+  watch();
+  // Deep links (#part-3, #step-20 …) jump straight there; the map follows on the next scroll check.
+  if (location.hash) { document.querySelector(location.hash)?.scrollIntoView({ behavior: "instant", block: "center" }); requestAnimationFrame(() => dispatchEvent(new Event("scroll"))); }
 })();
 </script>
 </body>

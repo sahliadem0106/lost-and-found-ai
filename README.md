@@ -4,9 +4,9 @@
 
 ### ▶ [Watch the step-by-step replay](https://sahliadem0106.github.io/newnew/)
 
-[![The replay at the Map step: reachable cameras light up with their time windows, and the clips sent to CreativAI are ringed in purple](docs/replay.png)](https://sahliadem0106.github.io/newnew/)
+[![The replay in Part 3: the map rings the clips sent to CreativAI, next to the exact prompts and CreativAI's answers word for word](docs/replay.png)](https://sahliadem0106.github.io/newnew/)
 
-The replay walks through a real run in 24 animated steps, laid out like an investigation board: the mall map on the left, an **investigation log** on the right that grows with every step (click any line to jump back), a chapter timeline, and a **footage strip** showing every clip and what happened to it (not checked, with CreativAI, family seen, separation, child alone, ruled out). You see the guard's report typed in, the Map lighting up the cameras a person could reach and when, CreativAI watching each clip and its answers word for word, the path drawing itself across the mall, the separation moment in the video, the lookalike family being ruled out, and the final alert. It runs in the browser with nothing to install. To run it locally, use `npm start` and open http://localhost:3000/replay.html.
+The replay is a long, scrolling case study. The ground-floor camera map stays pinned on the left and animates as you scroll. **Part 1** shows what really happened (the family walking in, the boy slipping away in TechZone, his route to the food court, the lookalike family, the parents searching the wrong way). **Part 2** explains the Eyes: how the footage was indexed in CreativAI and the exact questions it is asked. **Part 3** is the agent's real run from the moment the parents reach the security desk: every map calculation, **every prompt sent to CreativAI and every answer, word for word**, and each decision. **Part 4** is the result. It runs in the browser with nothing to install; to run it locally, use `npm start` and open http://localhost:3000/replay.html.
 
 It combines two things:
 
