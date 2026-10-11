@@ -234,3 +234,11 @@ No free dataset contains a "lost child" story, so:
 4. The rest, in the order in `demo/prompts/README.md`.
 
 **Budget rule:** at most **15 videos** in total, and ask the user before every paid video batch. The Higgsfield connector showed a free web account with 10 credits; the user says the API key's account holds the paid credit. Check the balance through the API before the first video.
+
+### CreativAI credits (from their pricing page)
+- **Plan: Free**, with 2,500 welcome credits and unlimited searches. Our expected total use is about 1,000–1,500 credits:
+  - video-only indexing of 3.5 min ≈ 25 credits per pass
+  - knowledge extraction ≈ 3 credits per 16 s segment per run
+  - agentic chat ≈ 6 credits per query
+- **Use video-only indexing.** Our clips are generated with sound off, and multimodal indexing is a Plus feature.
+- **If credits run out:** a one-time top-up of $10 = 5,000 credits. Only take Plus (50% student discount, so $10/month) if basic indexing turns out too weak in the early test.
