@@ -1,0 +1,113 @@
+{
+  "case": "A",
+  "report": {
+    "child": "a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers",
+    "family": "a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf",
+    "arrived": "14:00"
+  },
+  "steps": [
+    {
+      "step": "entry",
+      "sighting": {
+        "id": "A1",
+        "file": "demo/raw/case-A/A1.mp4",
+        "camera": "ENT-01",
+        "start": "14:02:00",
+        "t0": 50520,
+        "t1": 50535,
+        "family": true,
+        "child": "with_family",
+        "leaves": null,
+        "why": {
+          "family": "Yes, these adults are clearly visible walking together through the mall lobby.",
+          "child": "with these adults",
+          "leaves": "none"
+        }
+      }
+    }
+  ],
+  "family_path": [
+    {
+      "id": "A1",
+      "camera": "ENT-01",
+      "time": "14:02:00",
+      "child": "with_family"
+    },
+    {
+      "id": "A2",
+      "camera": "STR-A",
+      "time": "14:08:00",
+      "child": "with_family"
+    },
+    {
+      "id": "A3",
+      "camera": "STR-B",
+      "time": "14:19:00",
+      "child": "alone"
+    }
+  ],
+  "separation": {
+    "camera": "STR-B",
+    "time": "14:19:04",
+    "clip": "A3"
+  },
+  "child_path": [
+    {
+      "id": "A5",
+      "camera": "FC-02",
+      "time": "14:22:50"
+    }
+  ],
+  "rejected": [
+    {
+      "id": "A4",
+      "camera": "ATR-01",
+      "time": "14:19:50",
+      "why": "a boy matching the description, but with adults, not alone"
+    },
+    {
+      "id": "A6",
+      "camera": "FC-01",
+      "time": "14:24:00",
+      "why": "a boy matching the description, but with adults, not alone"
+    }
+  ],
+  "child_now": {
+    "camera": "FC-02",
+    "name": "Food court counters",
+    "last_seen": "14:23:05",
+    "clip": "A5"
+  },
+  "alert": "LOST CHILD: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers. Separated from parents at TechZone (electronics) (STR-B) around 14:19:04. Path: STR-B → FC-02. Last seen ALONE at Food court counters (FC-02) at 14:23:05. Nearest guard: go there now. Proof: clip A5.",
+  "creativai_credits": 0,
+  "seconds": 0,
+  "log": [
+    "CASE A: lost child report",
+    "  child : a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers",
+    "  family: a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf",
+    "  arrived around 14:00\n",
+    "① ENTRY: checking entrance cameras ENT-01, ENT-02 between 13:30:00 and 14:30:00",
+    "  ✔ family found: A1 @ ENT-01 (Main entrance) 14:02:00; child: with family\n",
+    "② FOLLOW THE FAMILY (adult walking speeds, up to 3 hops for blind spots, up to 15 min in a shop)",
+    "  from A1 @ ENT-01 (Main entrance) 14:02:00 → Map allows 11 camera windows; footage there: A2",
+    "    A2 STR-A  family: yes  child: with_family leaves at: -",
+    "  ✔ next sighting: A2 @ STR-A (Fashion House (clothing)) 14:08:00 (walk 68 m at 0.2 m/s, plausible)",
+    "  from A2 @ STR-A (Fashion House (clothing)) 14:08:00 → Map allows 9 camera windows; footage there: A3, A4, A5, A6",
+    "    A3 STR-B  family: no   child: alone       leaves at: 4",
+    "    A4 ATR-01 family: yes  child: with_family leaves at: 11",
+    "    A5 FC-02  family: no   child: alone       leaves at: -",
+    "    A6 FC-01  family: no   child: with_others leaves at: 10",
+    "  ✔ A3: the child walks away from the adults 4 s into the clip",
+    "\n③ SEPARATION: STR-B (TechZone (electronics)) at 14:19:04, clip A3\n",
+    "④ FOLLOW THE CHILD (child walking speeds, up to 4 hops, from STR-B 14:19:04)",
+    "  from STR-B 14:19:04 → footage on the child's possible path: A4, A5, A6",
+    "    A4 ATR-01 child: with_family family: yes",
+    "    A5 FC-02  child: alone       family: no",
+    "    A6 FC-01  child: with_others family: no",
+    "  ✔ child alone: A5 @ FC-02 (Food court counters) 14:22:50 (75 m via STR-B → ATR-01 → COR-W → FC-01 → FC-02, 0.33 m/s)",
+    "  from FC-02 14:23:05 → footage on the child's possible path: none",
+    "\n⑤ CHILD NOW: last seen alone at FC-02 (Food court counters), 14:23:05, clip A5",
+    "\nALERT → LOST CHILD: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers. Separated from parents at TechZone (electronics) (STR-B) around 14:19:04. Path: STR-B → FC-02. Last seen ALONE at Food court counters (FC-02) at 14:23:05. Nearest guard: go there now. Proof: clip A5.",
+    "Ignored: A4 (a boy matching the description, but with adults, not alone); A6 (a boy matching the description, but with adults, not alone)"
+  ]
+}
