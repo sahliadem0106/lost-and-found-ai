@@ -317,21 +317,31 @@ function playScenario(from, to, extra) {
     drawScenario(from + (to - from) * (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2), extra);
     if (k < 1) scenAnim = requestAnimationFrame(frame);
   })();
+  // Safety net if animation frames are paused (background tab): land on the final moment anyway.
+  const token = (playScenario.n = (playScenario.n || 0) + 1);
+  setTimeout(() => { if (playScenario.n === token) { cancelAnimationFrame(scenAnim); drawScenario(to, extra); } }, dur + 100);
 }
 
 // ================= Part 3: map state for the investigation (from the agent's trace) =================
-function leg(cls, from, to, animate) {
+// A leg of a path: drawn instantly, animated forward (the line grows and a dot walks along it),
+// or, with `back`, retracted (the dot walks back to the start and the line shrinks behind it).
+function leg(cls, from, to, animate, back = false) {
   const pl = el("polyline", { class: "leg " + cls, points: ptsOf(route(from, to)) }, L.legs);
-  if (!animate || reduced) return;
+  if (!animate || reduced) { if (back) pl.remove(); return; }
   const len = pl.getTotalLength(), dash = cls === "kid" ? null : len;
-  if (dash) { pl.style.strokeDasharray = `${len}`; pl.style.strokeDashoffset = `${len}`; pl.getBoundingClientRect(); pl.classList.add("draw"); pl.style.strokeDashoffset = "0"; }
+  if (dash) {
+    pl.style.strokeDasharray = `${len}`; pl.style.strokeDashoffset = back ? "0" : `${len}`;
+    pl.getBoundingClientRect(); pl.classList.add("draw"); pl.style.strokeDashoffset = back ? `${len}` : "0";
+  } else if (back) { pl.style.transition = "opacity 1.6s ease-in-out"; pl.getBoundingClientRect(); pl.style.opacity = "0"; }
   const dot = el("circle", { r: 9, fill: cls === "kid" ? "var(--child)" : "var(--family)", stroke: "var(--bg)", "stroke-width": 2 }, L.dots);
   const t0 = performance.now(), dur = 1600;
   (function step() {
     if (!pl.isConnected) { dot.remove(); return; }
-    const k = Math.min(1, Math.max(0, (performance.now() - t0) / dur)), p = pl.getPointAtLength(len * (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2));
+    const k = Math.min(1, Math.max(0, (performance.now() - t0) / dur)), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    const p = pl.getPointAtLength(len * (back ? 1 - e : e));
     dot.setAttribute("cx", p.x); dot.setAttribute("cy", p.y);
-    if (k < 1) requestAnimationFrame(step); else { dot.remove(); if (dash) pl.style.strokeDasharray = ""; }
+    if (k < 1) requestAnimationFrame(step);
+    else { dot.remove(); if (back) pl.remove(); else if (dash) pl.style.strokeDasharray = ""; }
   })();
 }
 function showReach(e) {
@@ -520,14 +530,19 @@ function activate(i) {
   $("caption").innerHTML = capText ? `<span class="who ${cw}">${cl}</span><span>${esc(capText)}</span>` : "";
 
   cancelAnimationFrame(scenAnim);
+  playScenario.n = (playScenario.n || 0) + 1; // cancels the safety timer of any story animation still pending
   if (s.part <= 2) {
     const m = s.map || {};
     L.reach.replaceChildren(); L.legs.replaceChildren(); L.top.replaceChildren(); L.tags.replaceChildren();
     for (const e of Object.values(camEls)) e.setAttribute("class", "cam");
+    const fromScenario = prev >= 0 && steps[prev].map?.mode === "scenario";
     if (m.mode === "scenario") {
-      // Continue from where the previous scene ended when scrolling forward; otherwise start the scene fresh.
-      const fromT = prev === i - 1 && steps[prev].map?.mode === "scenario" ? clockNow : toSec(m.from);
+      // Always continue from where the map is now, forwards or backwards. Arriving from Part 2
+      // (scrolling up), start at the end of this scene; arriving from above, at its start.
+      const fromT = fromScenario ? clockNow : toSec(prev > i ? m.to : m.from);
       playScenario(fromT, toSec(m.to), m);
+    } else if (m.mode === "overview" && fromScenario) {
+      playScenario(clockNow, toSec("14:00:00"), {}); // scrolling back to the top: everyone walks back out
     } else if (m.mode === "overview") { L.trail.replaceChildren(); L.dots.replaceChildren(); L.marks.replaceChildren(); setClock(toSec("14:00:00"), true); }
     else {
       L.trail.replaceChildren(); L.dots.replaceChildren(); L.marks.replaceChildren();
@@ -542,6 +557,18 @@ function activate(i) {
   // Parts 3 and 4: the investigation state up to this step.
   L.trail.replaceChildren(); L.tags.replaceChildren();
   const before = invState(i - 1), after = invState(i);
+  if (prev > i && steps[prev].part >= 3) {
+    // Scrolling back: show this step's finished state and retract whatever the later steps had added.
+    const was = invState(prev);
+    drawInv(after);
+    was.famLegs.slice(after.famLegs.length).reverse().forEach(([a, b]) => leg("fam", a, b, true, true));
+    was.kidLegs.slice(after.kidLegs.length).reverse().forEach(([a, b]) => leg("kid", a, b, true, true));
+    if (s.kind === "map") showReach(s.e); else if (s.kind === "qa") ringClips(s.e.clips); else L.reach.replaceChildren();
+    setClock(after.clock, true);
+    // Safety net if animation frames are paused (background tab): land on the final state anyway.
+    setTimeout(() => { if (active === i) { drawInv(after); setClock(after.clock, false); } }, reduced ? 0 : 1900);
+    return;
+  }
   drawInv(before);
   if (s.kind === "map") showReach(s.e);
   else if (s.kind === "qa") ringClips(s.e.clips);
@@ -563,7 +590,8 @@ function watch() {
     document.querySelectorAll("#steps .step").forEach(n => { const r = n.getBoundingClientRect(); const d = Math.abs(r.top + Math.min(r.height, innerHeight) / 2 - mid); if (d < bestD) { bestD = d; best = +n.dataset.i; } });
     activate(best);
   };
-  addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(pick); } }, { passive: true });
+  // Check at most every 60 ms while scrolling (a timer, so it works even when animation frames are paused).
+  addEventListener("scroll", () => { if (!ticking) { ticking = true; setTimeout(pick, 60); } }, { passive: true });
   addEventListener("resize", pick);
   pick();
 }
