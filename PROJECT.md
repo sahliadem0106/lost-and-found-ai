@@ -242,3 +242,14 @@ No free dataset contains a "lost child" story, so:
   - agentic chat ≈ 6 credits per query
 - **Use video-only indexing.** Our clips are generated with sound off, and multimodal indexing is a Plus feature.
 - **If credits run out:** a one-time top-up of $10 = 5,000 credits. Only take Plus (50% student discount, so $10/month) if basic indexing turns out too weak in the early test.
+
+### API facts verified in this session
+- **CreativAI works:** base URL `https://ws.creativai-apis.com` (pass `base_url` to the SDK; its default `creativai-apis.com` doesn't get the key). The account has **2,500 credits**.
+- **Higgsfield API base is `https://api.higgsfield.ai`**, not platform.higgsfield.ai. The network secret must target `api.higgsfield.ai`; until then the API answers 401.
+- **Higgsfield models via the API:**
+  - Images: **Soul V2** `POST /higgsfield-ai/soul/v2/standard`. Nano Banana is **not** in the API catalog.
+  - Kling 3.0:
+    - `/kling-video/v3.0-turbo/{text,image}-to-video` (budget; no sound or elements field; 720p default; 3–15 s)
+    - `/kling-video/v3.0/std/{text,image}-to-video` (`sound` off/on; `elements` = Kling element IDs)
+  - Character references: `/kling-video/o3/image-reference` (Kling 3.0 Omni, `image_urls`, sound off by default)
+  - Free price check: `POST /estimate/<endpoint>` with the same body. Uploads: `POST /files/generate-upload-url`, then a PUT to the presigned URL. Poll `status_url`.
