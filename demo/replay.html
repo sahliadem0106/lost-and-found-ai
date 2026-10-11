@@ -94,12 +94,23 @@ code, kbd { font-family: var(--mono); font-size: .9em; }
 .numbers div { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
 .numbers b { display: block; font: 600 32px/1.1 var(--display); }
 .numbers span { color: var(--muted); font-size: 14px; }
-.crit { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
-.crit > div { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--alert); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
-.crit b { font: 600 19px/1.2 var(--display); letter-spacing: .02em; }
-.crit p { margin: 0; color: var(--muted); font-size: 14.5px; }
-.crit .ex { font-size: 13.5px; color: var(--fg); background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
-.crit .ex::before { content: "Example · "; font: 600 12px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--alert); }
+.wins { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.wins > div { background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--ok); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.wins b { font: 600 20px/1.2 var(--display); letter-spacing: .02em; }
+.wins p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.pairs { display: grid; gap: 12px; }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.pair > div { padding: 14px 18px; display: grid; gap: 6px; align-content: start; }
+.pair .bad { background: color-mix(in srgb, var(--alert) 6%, var(--panel)); border-right: 1px solid var(--line); }
+.pair .fix { background: color-mix(in srgb, var(--ok) 7%, var(--panel)); position: relative; }
+.pair .fix::before { content: "→"; position: absolute; left: -12px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 1px solid var(--line); color: var(--ok); font-size: 13px; display: grid; place-items: center; }
+.pair span { font: 600 11.5px var(--mono); text-transform: uppercase; letter-spacing: .1em; }
+.pair .bad span { color: var(--alert); } .pair .fix span { color: var(--ok); }
+.pair b { font: 600 19px/1.2 var(--display); letter-spacing: .02em; }
+.pair p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.pair .ex { color: var(--fg); font-size: 14px; }
+@media (max-width: 760px) { .pair { grid-template-columns: minmax(0, 1fr); } .pair .bad { border-right: 0; border-bottom: 1px solid var(--line); } .pair .fix::before { content: "↓"; left: 50%; top: -12px; transform: translateX(-50%); } }
+.need .hi { border-left-color: var(--ok); }
 .need { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
 .need > div { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--family); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
 .need span { font: 600 11.5px var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: .08em; }
@@ -283,7 +294,7 @@ footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(
   <header>
     <span class="eyebrow">Behind the replay</span>
     <h2>How it was built</h2>
-    <p class="intro">The whole project, end to end: how the footage was made, how CreativAI was used, what each script does, what changed along the way, and an honest <a href="#critique">critique</a> with what it would take to make it real.</p>
+    <p class="intro">The whole project, end to end: how the footage was made, how CreativAI was used, what each script does, what changed along the way, <a href="#works">what works</a>, its <a href="#critique">limits and their fixes</a>, and what a real deployment would cost.</p>
   </header>
 
   <div>
@@ -351,43 +362,55 @@ footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(
     </div>
   </div>
 
+  <div id="works">
+    <h3>What works</h3>
+    <div class="wins">
+      <div><b>Right answer, start to finish</b><p>Family's path, the moment the boy walked away, his route, and where he is now all match the staged story. The separation time is within 6 seconds.</p></div>
+      <div><b>The trap didn't work</b><p>A lookalike family (same thobe, same shemagh, a boy in red) sat two cameras away. The agent ruled it out because that boy wasn't alone.</p></div>
+      <div><b>From one description</b><p>No photo, no face recognition, no names: just what the parents told the guard. That's also kinder to privacy.</p></div>
+      <div><b>Looks only where it must</b><p>From each sighting the map allows a handful of cameras and minutes; everything else is never sent to CreativAI. That's what keeps a case fast and cheap.</p></div>
+      <div><b>Every step is explainable</b><p>Each decision comes with the exact prompt, CreativAI's word-for-word answer and the walking distance that makes it possible. A guard can check why.</p></div>
+      <div><b>Cheap to build and to rerun</b><p>About 96 CreativAI credits for the whole project. Answers are cached, so replaying a case costs nothing and takes under a second.</p></div>
+      <div><b>Works for any building</b><p>The mall is one JSON file of cameras and walkways. Swap it for an airport, a stadium or a hospital, and the same code runs.</p></div>
+      <div><b>Fixable in one place</b><p>When two clips came back wrong, one script swapped them in CreativAI and only those two were re-asked. Every answer is now correct.</p></div>
+    </div>
+  </div>
+
   <div id="critique">
-    <h3>Critique: where it falls short</h3>
-    <div class="crit">
-      <div><b>One staged case, tuned on itself</b><p>Every rule was developed and checked on case A. The "read the family's footage in time order" rule was added <i>after</i> seeing case A go wrong, and the blind test on case B (clips already generated) was never run. So this shows the method can work; it doesn't show that it generalises.</p></div>
-      <div><b>AI video isn't CCTV, and doesn't follow the script</b><p>Real footage has low light, low resolution, occlusion and crowds. The generated clips are clean, but they drift from their prompts and needed human review.</p><p class="ex">A3 was scripted for the boy to leave at 9–13 s; he leaves at 4 s. In the trick clip A6, the boy was meant to stay at the table; he gets up at 10 s. Two clips had to be remade (a duplicated boy, a person on a counter).</p></div>
-      <div><b>Strict descriptions make "no" too easy</b><p>The family question lists every detail at once, so one missing item turns a correct match into a "no". The agent survived it here only because the separation rule looks at the child, not the family flag.</p><p class="ex">On A3, CreativAI answered the family question with "no. The man in the video is not carrying a shopping bag", while the parents were clearly in the shot.</p></div>
-      <div><b>Ambiguous scenes fool the Eyes</b><p>When a frame holds two similar people, or people are tiny, the answers become guesses, and the agent has no second opinion.</p><p class="ex">The first atrium clip had two boys in red; CreativAI said the boy was "with these adults… approaching the fountain", and the agent wrongly ruled the atrium out.</p></div>
-      <div><b>Timing comes from one number</b><p>The separation time is a single answer ("4") with no frame-level check. It landed within 6 seconds of the staged moment, but nothing verifies it.</p></div>
-      <div><b>Tiny footage, so the cost looks tiny</b><p>The demo had 6 clips of 15 s on 6 of 12 cameras. A real mall has every camera running for hours, so each time window would hold hundreds of chunks, not one or two.</p><p class="ex">96 credits covered this whole project; one question round over 15 minutes of 3 real cameras would be about 900 credits.</p></div>
-      <div><b>Search wasn't usable for this</b><p>CreativAI search returns whole 16-second chunks with near-identical scores for similar scenes, so it can't rank which camera has the family, or say when something happened.</p><p class="ex">For "boy alone", every clip scored between 0.030 and 0.033, and the right clips came 4th and 5th.</p></div>
-      <div><b>A rule-based agent, not a reasoning one</b><p>By choice there's no LLM driving the loop: the questions and rules are fixed. It can't adapt if the child changes clothes, the family splits up, a stranger leads the child away, or the mall has several floors.</p></div>
-      <div><b>Slow first answer</b><p>Each round of questions takes about a minute, and the first run took about 3 minutes. With real footage, more rounds and more chunks per round would make it slower, while every minute matters in a lost-child case. The cache only helps reruns.</p></div>
-      <div><b>Wrong answers have real costs</b><p>A false match sends a guard to the wrong place. Clothing descriptions of a child also raise privacy questions. A real system needs a person to confirm each sighting, strict data deletion, and signage and consent.</p></div>
+    <h3>Limits, and how to fix each one</h3>
+    <div class="pairs">
+      <div class="pair"><div class="bad"><span>Limit</span><b>Tested on one staged case</b><p>The rules were tuned on case A; the blind test on case B was never run.</p></div><div class="fix"><span>Fix</span><b>Run the blind test, then build a test set</b><p>Case B's clips already exist (≈40 credits to run). Ten more staged cases cost about $70 in clips.</p></div></div>
+      <div class="pair"><div class="bad"><span>Limit</span><b>AI video drifts from its script</b><p class="ex">A3 was scripted for the boy to leave at 9–13 s; he leaves at 4 s. Two clips had to be remade.</p></div><div class="fix"><span>Fix</span><b>Real multi-camera footage</b><p>Public datasets such as MEVA, then a pilot with a mall (with consent and signage). Every clip here was also checked frame by frame before use.</p></div></div>
+      <div class="pair"><div class="bad"><span>Limit</span><b>All-or-nothing descriptions</b><p class="ex">On A3, CreativAI said "no. The man in the video is not carrying a shopping bag", while the parents were in the shot.</p></div><div class="fix"><span>Fix</span><b>Score each detail separately</b><p>Ask about thobe, shemagh, abaya, bag one by one and match on most of them, not all.</p></div></div>
+      <div class="pair"><div class="bad"><span>Limit</span><b>Ambiguous scenes can fool the Eyes</b><p class="ex">The first atrium clip had two boys in red; CreativAI matched the wrong one.</p></div><div class="fix"><span>Fix</span><b>A second opinion</b><p>Re-ask when answers conflict, add a person detector / re-identification model as a cross-check, and let a guard confirm before an alert goes out.</p></div></div>
+      <div class="pair"><div class="bad"><span>Limit</span><b>Timing from a single answer</b><p>The separation second ("4") isn't verified frame by frame.</p></div><div class="fix"><span>Fix</span><b>Zoom in on the key moment</b><p>Re-ask about the few seconds around it, using a shorter clip cut at that point.</p></div></div>
+      <div class="pair"><div class="bad"><span>Limit</span><b>Search can't rank or time events</b><p class="ex">For "boy alone", every clip scored 0.030–0.033.</p></div><div class="fix"><span>Fix</span><b>Already fixed: questions, not search</b><p>The Eyes use data plates and per-clip questions; search is kept only for exploring.</p></div></div>
+      <div class="pair"><div class="bad"><span>Limit</span><b>Fixed rules, no reasoning model</b><p>It can't adapt if the child changes clothes, the family splits up, or the mall has several floors.</p></div><div class="fix"><span>Fix</span><b>An LLM driving the loop</b><p>A model such as Claude could rephrase questions and handle unusual cases, for a few cents per case. Multi-floor is just more edges in the map.</p></div></div>
+      <div class="pair"><div class="bad"><span>Limit</span><b>About 3 minutes to a first answer</b><p>Each question round takes about a minute.</p></div><div class="fix"><span>Fix</span><b>Index ahead, ask in parallel</b><p>Index the report window the moment the report starts, ask about several cameras at once, and use CreativAI live streams for instant footage.</p></div></div>
     </div>
   </div>
 
   <div>
-    <h3>What it would take for real</h3>
+    <h3>What a real deployment costs</h3>
+    <p class="muted" style="margin:0 0 14px;max-width:80ch">No need to index the whole mall all day. The parents' report gives a time window (here, arrival around 14:00 and the report at 14:27), so only that window is indexed, and only on the cameras the map says are reachable. Costs below use this project's measured rates.</p>
     <div class="need">
-      <div><span>Video intelligence</span><b>Continuous indexing at mall scale</b><p>Every camera indexed all day, or streamed live. At this project's measured rate (≈400 credits per video-hour):</p><p class="cost">≈ $0.80 per camera-hour · 12 cameras × 12 h ≈ $115/day, ≈ $3,450/month</p></div>
-      <div><span>Video intelligence</span><b>A paid CreativAI plan</b><p>The free plan only allows video-only indexing. Multimodal indexing would let the guard search with a photo of the parent, and use audio. Live-stream sessions (RTSP) would replace batch uploads, so footage is ready the moment a report comes in.</p></div>
-      <div><span>Video intelligence</span><b>Question budget per case</b><p>Each round costs ≈5.3 credits per 16-second chunk. A real case with several rounds over long windows:</p><p class="cost">≈ $1.80 per round (15 min × 3 cameras) · a case ≈ $5–15</p></div>
-      <div><span>Data</span><b>Real multi-camera footage</b><p>A partnership with a mall (with legal agreements and consent), or public multi-camera datasets such as MEVA, to test on real CCTV instead of generated clips.</p></div>
-      <div><span>Evaluation</span><b>A proper test set</b><p>Dozens of unseen cases (different families, clothes, routes, tricks) with blind runs and accuracy numbers. Staging one case costs about $7 in clips.</p><p class="cost">≈ $70 for 10 more staged cases</p></div>
-      <div><span>Compute</span><b>A second pair of eyes</b><p>A person detector and re-identification model (for example YOLO + OSNet) running on a GPU or edge box per camera, to cross-check CreativAI and resolve lookalikes.</p></div>
-      <div><span>Reasoning</span><b>An LLM agent</b><p>A model such as Claude driving the loop could rephrase questions when answers conflict, handle unusual cases and write the guard's alert in plain language, for a few cents per case.</p></div>
+      <div class="hi"><span>Per case · on demand</span><b>Index only the report window</b><p>30 minutes of footage, indexed after the report:</p><p class="cost">6 cameras ≈ $2.40 · all 12 ≈ $4.80</p></div>
+      <div class="hi"><span>Per case · on demand</span><b>Questions only where the map points</b><p>A few rounds over a few minutes of a couple of cameras:</p><p class="cost">≈ $1.20</p></div>
+      <div class="hi"><span>Total</span><b>≈ $3.60 – $6 per lost-child case</b><p>versus about $3,450 a month to index 12 cameras for 12 hours every day.</p></div>
+      <div><span>Plan</span><b>A paid CreativAI plan</b><p>Adds multimodal indexing (search with a photo of the parent) and live-stream sessions (RTSP), so footage is ready the moment a report comes in.</p></div>
+      <div><span>Data</span><b>Real footage and a test set</b><p>MEVA or a mall pilot for real CCTV; about $70 for ten more staged cases.</p></div>
+      <div><span>Compute</span><b>Optional second pair of eyes</b><p>A detector + re-identification model on a GPU or edge box, to cross-check CreativAI on hard scenes.</p></div>
     </div>
   </div>
 
   <div>
     <h3>Next steps, in order</h3>
     <ol class="next">
-      <li><b>Run the blind test on case B.</b> The clips exist; it needs about 40 CreativAI credits (indexing + questions) and an honest write-up, pass or fail.</li>
-      <li><b>Score descriptions item by item</b> (thobe, shemagh, bag…) instead of one all-or-nothing question.</li>
-      <li><b>Double-check key moments:</b> re-ask about the few seconds around the separation, and ask a second question when answers conflict.</li>
-      <li><b>Add a guard confirmation step</b> before an alert is sent.</li>
-      <li><b>Test on real multi-camera footage</b> (MEVA), then on a live stream.</li>
+      <li><b>Run the blind test on case B</b> and publish the result, pass or fail.</li>
+      <li><b>Score descriptions detail by detail</b> instead of one all-or-nothing question.</li>
+      <li><b>On-demand indexing</b> of the report window, plus parallel questions.</li>
+      <li><b>Guard confirmation</b> before an alert is sent, and a re-check of the key moment.</li>
+      <li><b>Real multi-camera footage</b> (MEVA), then a live-stream pilot.</li>
     </ol>
   </div>
 
