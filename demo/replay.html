@@ -24,19 +24,78 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: va
 a { color: var(--family); }
 code, kbd { font-family: var(--mono); font-size: .9em; }
 
-/* Hero */
-.hero { min-height: 92vh; display: grid; align-content: center; gap: 22px; padding: 64px 24px 48px; max-width: 1100px; margin: 0 auto; }
-.eyebrow { font: 600 14px var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--child); }
-.hero h1 { font: 700 clamp(44px, 7vw, 88px)/0.95 var(--display); letter-spacing: .02em; text-transform: uppercase; margin: 0; text-wrap: balance; }
-.hero .lede { font-size: clamp(17px, 2vw, 21px); color: var(--muted); max-width: 62ch; margin: 0; }
-.hero .lede b.m { color: var(--family); } .hero .lede b.e { color: var(--eyes); } .hero .lede b.a { color: var(--child); }
-.toc { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
-@media (max-width: 760px) { .toc { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.toc a { text-decoration: none; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 2px; transition: border-color .2s, transform .2s; }
-.toc a:hover { border-color: var(--muted); transform: translateY(-2px); }
-.toc b { font: 600 13px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
-.toc span { font: 600 20px/1.2 var(--display); }
-.scrollhint { color: var(--faint); font-size: 14px; }
+/* Hero: a welcoming project landing — name, one line, a few facts, and a small animated map */
+.hero { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 40px; align-items: center; padding: 48px 32px; max-width: 1400px; margin: 0 auto; position: relative; }
+.hero::before { content: ""; position: absolute; inset: 0; background: radial-gradient(50% 50% at 72% 50%, rgba(94, 196, 220, .10), transparent 70%), radial-gradient(40% 40% at 20% 30%, rgba(242, 165, 65, .07), transparent 70%); pointer-events: none; z-index: -1; }
+.hero-text { display: grid; gap: 22px; align-content: center; }
+.eyebrow { font: 600 14px var(--display); letter-spacing: .22em; text-transform: uppercase; color: var(--child); }
+.hero h1 { font: 700 clamp(56px, 8vw, 116px)/0.9 var(--display); letter-spacing: .01em; text-transform: uppercase; margin: 0; }
+.hero h1 span { color: var(--child); }
+.tagline { font-size: clamp(19px, 2vw, 24px); color: var(--fg); margin: 0; max-width: 30ch; line-height: 1.4; }
+.tagline b.m { color: var(--family); font-weight: 600; } .tagline b.e { color: var(--eyes); font-weight: 600; }
+.cta { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { text-decoration: none; font: 600 15px var(--body); color: var(--fg); border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 11px 20px; transition: transform .2s, border-color .2s, background .2s; }
+.btn:hover { transform: translateY(-2px); border-color: var(--muted); }
+.btn.primary { background: var(--child); border-color: var(--child); color: var(--bg); }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; max-width: 560px; }
+.facts div { border-left: 2px solid var(--line); padding: 2px 0 2px 12px; }
+.facts b { display: block; font: 600 28px/1.1 var(--display); }
+.facts span { color: var(--muted); font-size: 13px; }
+#heromap { width: 100%; height: auto; display: block; filter: drop-shadow(0 30px 60px rgba(0, 0, 0, .45)); }
+.hm-zone { fill: rgba(19, 37, 46, .65); stroke: var(--line); stroke-width: 1.5; }
+.hm-edge { stroke: #28434d; stroke-width: 2.5; stroke-dasharray: 6 6; }
+.hm-cam { fill: #0d1a20; stroke: var(--faint); stroke-width: 2; }
+.hm-path { fill: none; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; filter: url(#hglow); }
+.hm-fam { stroke: var(--family); animation: hmdraw 10s ease-in-out infinite; }
+.hm-kid { stroke: var(--child); animation: hmdraw 10s ease-in-out infinite; animation-delay: 0s; }
+@keyframes hmdraw { 0% { stroke-dashoffset: var(--len); opacity: 1; } 35% { stroke-dashoffset: 0; opacity: 1; } 85% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes hmdraw2 { 0%, 35% { stroke-dashoffset: var(--len); opacity: 1; } 65% { stroke-dashoffset: 0; opacity: 1; } 85% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+.hm-kid { animation-name: hmdraw2; }
+.hm-found { fill: none; stroke: var(--child); stroke-width: 3; animation: hmfound 10s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes hmfound { 0%, 62% { opacity: 0; transform: scale(.5); } 70% { opacity: 1; transform: scale(1); } 85% { opacity: 0; transform: scale(2.4); } 100% { opacity: 0; } }
+.hm-label { font: 600 16px var(--display); letter-spacing: .1em; text-transform: uppercase; paint-order: stroke; stroke: var(--bg); stroke-width: 5px; }
+.scrollhint { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); color: var(--faint); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; animation: bob 2s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translate(-50%, 6px); } }
+@media (max-width: 900px) {
+  .hero { grid-template-columns: minmax(0, 1fr); padding: 40px 16px 72px; gap: 24px; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* How it was built (after the story) */
+.built { max-width: 1240px; margin: 0 auto; padding: 14vh 24px 40px; display: grid; gap: 56px; }
+.built > header { display: grid; gap: 12px; }
+.built h2 { font: 700 clamp(40px, 5vw, 66px)/1 var(--display); text-transform: uppercase; margin: 0; }
+.built .intro { color: var(--muted); font-size: 19px; max-width: 64ch; margin: 0; }
+.built h3 { font: 600 26px var(--display); letter-spacing: .02em; margin: 0 0 14px; }
+.pipeline { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; counter-reset: st; }
+.pipeline > div { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; position: relative; }
+.pipeline > div:not(:last-child)::after { content: "→"; position: absolute; right: -13px; top: 50%; transform: translateY(-50%); color: var(--faint); font-size: 18px; }
+.pipeline b { font: 600 13px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--child); }
+.pipeline h4 { font: 600 21px/1.15 var(--display); margin: 0; }
+.pipeline p { margin: 0; color: var(--muted); font-size: 14.5px; }
+@media (max-width: 900px) { .pipeline { grid-template-columns: minmax(0, 1fr); } .pipeline > div:not(:last-child)::after { content: "↓"; right: 50%; top: auto; bottom: -15px; transform: none; } }
+.tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.tools div { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.tools b { font: 600 19px var(--display); letter-spacing: .02em; }
+.tools span { font: 600 11.5px var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: .08em; }
+.tools p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.scripts { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.scripts th { text-align: left; font: 600 13px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.scripts td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--muted); }
+.scripts td:first-child { font: 500 13.5px var(--mono); color: var(--fg); white-space: nowrap; }
+.scripts td:nth-child(2) { color: var(--fg); }
+.tablewrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+.changes { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-left: 2px solid var(--line); }
+.changes li { position: relative; padding: 0 0 22px 26px; }
+.changes li::before { content: ""; position: absolute; left: -7px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--child); }
+.changes b { display: block; font: 600 19px var(--display); letter-spacing: .02em; }
+.changes p { margin: 2px 0 0; color: var(--muted); font-size: 15px; max-width: 80ch; }
+.numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.numbers div { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.numbers b { display: block; font: 600 32px/1.1 var(--display); }
+.numbers span { color: var(--muted); font-size: 14px; }
+.runit { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; }
+.runit pre { margin: 0; font: 13.5px/1.6 var(--mono); background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
 
 /* Story layout: a big pinned map, a narrower story column */
 .layout { display: grid; grid-template-columns: minmax(0, 58fr) minmax(0, 42fr); gap: 0 32px; max-width: 1840px; margin: 0 auto; padding: 0 20px; }
@@ -165,16 +224,24 @@ footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(
 <body>
 
 <header class="hero">
-  <span class="eyebrow">Case study · AI agent + video understanding</span>
-  <h1>Lost &amp; Found</h1>
-  <p class="lede">A six-year-old disappears in a busy mall. From nothing but the parents' description, an agent follows the family across the security cameras and finds where the boy was lost and where he is now. A <b class="m">camera map</b> decides where to look, <b class="e">CreativAI</b> watches only that footage, and the <b class="a">agent</b> joins the dots. Everything below is a replay of a real run, including every prompt sent to CreativAI and every answer it gave.</p>
-  <nav class="toc" aria-label="Contents">
-    <a href="#part-1"><b>Part 1</b><span>What happened</span></a>
-    <a href="#part-2"><b>Part 2</b><span>The Eyes: CreativAI</span></a>
-    <a href="#part-3"><b>Part 3</b><span>The investigation</span></a>
-    <a href="#part-4"><b>Part 4</b><span>The result</span></a>
-  </nav>
-  <span class="scrollhint">Scroll down. The map follows the story, forwards and backwards.</span>
+  <div class="hero-text">
+    <span class="eyebrow">Portfolio project · AI agent + video understanding</span>
+    <h1>Lost <span>&amp;</span> Found</h1>
+    <p class="tagline">A child goes missing in a mall. From one description, an agent finds him on the security cameras, using a <b class="m">camera map</b> and <b class="e">CreativAI</b>.</p>
+    <div class="cta">
+      <a class="btn primary" href="#part-1">▶ Watch the case</a>
+      <a class="btn" href="#built">How it was built</a>
+      <a class="btn" href="https://github.com/sahliadem0106/newnew">GitHub</a>
+    </div>
+    <div class="facts" id="facts">
+      <div><b>12</b><span>cameras</span></div>
+      <div><b id="f-clips">6</b><span>clips checked</span></div>
+      <div><b id="f-lost">14:19</b><span>lost at TechZone</span></div>
+      <div><b id="f-now">FC-02</b><span>found, alone</span></div>
+    </div>
+  </div>
+  <svg id="heromap" viewBox="8 6 1006 628" role="img" aria-label="Animated map: the family's path through the mall, then the boy's path to the food court"></svg>
+  <span class="scrollhint">Scroll to begin ↓</span>
 </header>
 
 <div class="layout">
@@ -197,6 +264,89 @@ footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(
   </aside>
   <main class="steps" id="steps"></main>
 </div>
+
+<section class="built" id="built" aria-label="How it was built">
+  <header>
+    <span class="eyebrow">Behind the replay</span>
+    <h2>How it was built</h2>
+    <p class="intro">The whole project, end to end: how the footage was made, how CreativAI was used, what each script does, and what changed along the way.</p>
+  </header>
+
+  <div>
+    <h3>The pipeline</h3>
+    <div class="pipeline">
+      <div><b>1 · Footage</b><h4>Make the cameras' video</h4><p>No real lost-child footage exists, so the story was staged with AI video. Each character got a reference sheet (Qwen Image 3); Kling O3 then generated 15-second CCTV clips from a prompt plus the sheets, so the same family appears in every camera.</p></div>
+      <div><b>2 · Indexing</b><h4>Give the footage to CreativAI</h4><p>Each clip is uploaded to a CreativAI collection, tagged with its camera and start time, and indexed (cut into 16-second chunks CreativAI can search and reason about).</p></div>
+      <div><b>3 · The agent</b><h4>Map + Eyes, in a loop</h4><p>From the guard's description, the agent asks the camera map where the family could be, asks CreativAI about only that footage, and repeats until it has the separation point and the boy's current location.</p></div>
+      <div><b>4 · Showing it</b><h4>Replay and console</h4><p>The agent records every step, prompt and answer. This page replays that record; a local console lets a guard type a report and watch the agent run live.</p></div>
+    </div>
+  </div>
+
+  <div>
+    <h3>The tools</h3>
+    <div class="tools">
+      <div><span>Video intelligence</span><b>CreativAI</b><p>The Eyes. Collections and chunk indexing store the footage with camera/time tags. <strong style="color:var(--fg);font-weight:600">Data plates + knowledge extraction</strong> answer plain-English questions per clip (is the family here, is the child alone, when does he walk away). Search was tested too, but it can't time events inside a clip.</p></div>
+      <div><span>Generation API</span><b>Higgsfield</b><p>One API for all the image and video models used to stage the footage, with a free price check before every paid request.</p></div>
+      <div><span>Image model</span><b>Qwen Image 3</b><p>Made the seven character reference sheets (front, side and back of each person). About $0.04 each.</p></div>
+      <div><span>Video models</span><b>Kling O3 · Kling 3.0</b><p>Kling O3 image-reference turned prompts + character sheets into the clips (≈$1.07 per 15 s). The two trick clips with strangers used plain Kling 3.0 text-to-video (≈$0.63).</p></div>
+      <div><span>Runtime</span><b>Node.js</b><p>Everything else is plain Node, with no packages: the camera map, the CreativAI client, the agent and the local server.</p></div>
+      <div><span>Checking</span><b>ffmpeg · headless browser</b><p>ffmpeg pulled frames to check what each clip really shows and made light web copies; a headless browser tested this page step by step.</p></div>
+    </div>
+  </div>
+
+  <div>
+    <h3>The scripts</h3>
+    <div class="tablewrap"><table class="scripts">
+      <thead><tr><th>File</th><th>What it does</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr><td>mall_topology.json</td><td>The mall</td><td>12 cameras with positions and placement, the walkways between them in metres, walking speeds, and the staged story's true timeline.</td></tr>
+        <tr><td>pipeline/graph.js</td><td>The Map</td><td>From a sighting at camera X and time t, lists the cameras reachable within 1–4 walkway hops and the time window for each (distance ÷ max and min walking speed, plus time in shops). Also checks whether a move is physically possible.</td></tr>
+        <tr><td>pipeline/creativai.js</td><td>API client</td><td>Small REST client for CreativAI with retries; reads the key from the environment and never prints it.</td></tr>
+        <tr><td>pipeline/ingest.js</td><td>Upload &amp; index</td><td>Uploads a case's clips, tags them <code>camera:&lt;id&gt;</code> and <code>clip:&lt;id&gt;</code> with start-time metadata, waits for preprocessing, prices the indexing and runs it. Resumable.</td></tr>
+        <tr><td>pipeline/eyes.js</td><td>The Eyes</td><td>Builds a data plate from only the clips the Map picked, adds the three questions as knowledge-extraction columns, reads the answers back and caches them per clip, so reruns are free and instant.</td></tr>
+        <tr><td>pipeline/find-child.js</td><td>The agent</td><td>Entry at the doors → follow the family in time order → separation → follow the child (alone sightings only) → alert. Saves the result and a full trace of every step for this replay.</td></tr>
+        <tr><td>pipeline/replace-clip.js</td><td>Swap a clip</td><td>Removes a clip's old version from CreativAI and forgets its cached answers, so only the new version is asked about again.</td></tr>
+        <tr><td>pipeline/search.js</td><td>Raw search</td><td>Runs a CreativAI search with optional camera filters. Used in the first tests; kept for exploring.</td></tr>
+        <tr><td>server.js · case.html</td><td>Case console</td><td>Local page where a guard types the report; the server runs the agent and streams its log live, then the page draws the result.</td></tr>
+        <tr><td>replay.html</td><td>This page</td><td>Reads the agent's trace and animates it: every map state is plain data, and the map glides between states in either direction.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div>
+    <h3>What changed along the way</h3>
+    <ol class="changes">
+      <li><b>Soul couldn't draw a child → Qwen Image 3</b><p>The first image model drew an adult, then a teenager, for "6-year-old boy". Qwen Image 3 got it right, so all character sheets use it.</p></li>
+      <li><b>Character sheets keep the family consistent</b><p>Kling O3 takes reference images, so every clip is generated from the same sheets. A prompt line tells it each sheet is one person seen from three angles.</p></li>
+      <li><b>Search alone wasn't enough → data plates</b><p>CreativAI search returns whole 16-second chunks with nearly identical scores for similar mall scenes, and can't say <i>when</i> something happens. Asking questions per clip with data plates gave accurate answers, including the second the boy walks away.</p></li>
+      <li><b>One bundled question hid the boy → separate questions</b><p>Asking about the child only "if the family is present" missed him when he was alone. The family and the child are now asked about separately.</p></li>
+      <li><b>CreativAI renames question columns → tolerant matching</b><p>Punctuation in the questions is changed in the stored column names, so answers are matched on letters and digits only.</p></li>
+      <li><b>Read the family's footage in time order</b><p>An ambiguous wide shot made the first run place the separation in the wrong camera. The rule "the first clip where the child walks away is the separation" fixed it. It was added after seeing case A, which is why a blind test on a second case was planned.</p></li>
+      <li><b>Two clips remade after review</b><p>The video generator added a second boy in red to the atrium clip and a person lying on a food counter. Both were regenerated with stricter prompts and camera placements that match the map, swapped in with replace-clip.js, and re-asked. Every answer is now correct.</p></li>
+      <li><b>Cache and trace</b><p>Every CreativAI answer is cached and every agent step is recorded, which is what makes this replay possible without calling any API.</p></li>
+    </ol>
+  </div>
+
+  <div>
+    <h3>By the numbers</h3>
+    <div class="numbers">
+      <div><b>≈ $16.90</b><span>Higgsfield: 7 character sheets + 16 clips (incl. 2 remakes)</span></div>
+      <div><b>≈ 96</b><span>CreativAI credits used, of 2,500 free</span></div>
+      <div><b>≈ 3 min</b><span>first agent run; reruns take under a second</span></div>
+      <div><b>6 / 6</b><span>clips answered correctly after the remakes</span></div>
+    </div>
+  </div>
+
+  <div class="runit">
+    <h3 style="margin:0">Run it yourself</h3>
+    <p class="muted" style="margin:0">Node.js 18+, nothing to install. The cached answers mean no API key is needed to replay case A.</p>
+    <pre>git clone https://github.com/sahliadem0106/newnew.git
+cd newnew
+npm run find:a     # the agent's full log in the terminal
+npm start          # then open http://localhost:3000/replay.html</pre>
+    <p class="muted" style="margin:0">Limits: the footage is AI-generated, the rules were tuned on this one case, and the blind test on a second case was not run. Full write-up and tutorial in the <a href="https://github.com/sahliadem0106/newnew#readme">README</a>.</p>
+  </div>
+</section>
 
 <footer>
   Footage is AI-generated for this demo (Kling via the Higgsfield API) and the story was staged; the agent's run and CreativAI's answers are real and are stored in CreativAI's data plates for this collection.
@@ -301,6 +451,32 @@ function partial(P, len) {
     break;
   }
   return { d: out.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" "), end };
+}
+
+// ================= the landing: a small map that draws the family's path, then the boy's =================
+function drawHeroMap() {
+  const hs = $("heromap");
+  el("defs", {}, hs).innerHTML = `<filter id="hglow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  [[12,2,26,22],[40,2,20,22],[62,2,26,22],[2,28,96,10],[2,40,36,18],[42,40,16,18],[62,40,14,14],[80,40,12,18]]
+    .forEach(([x,y,w,h]) => el("rect", { class: "hm-zone", x: O + x * S, y: O + y * S, width: w * S, height: h * S, rx: 8 }, hs));
+  for (const e of topo.edges) el("line", { class: "hm-edge", x1: cam[e.a].x, y1: cam[e.a].y, x2: cam[e.b].x, y2: cam[e.b].y }, hs);
+  const sepIdx = story.family.findIndex(s => s.c === story.sepCam);
+  const famSeq = story.family.slice(0, sepIdx + 1).map(s => s.c).filter((c, i, a) => c !== a[i - 1]);
+  const kidSeq = story.child.map(s => s.c);
+  for (const [seq, cls] of [[famSeq, "hm-fam"], [kidSeq, "hm-kid"]]) {
+    const P = polyThrough(seq), len = P.cum[P.cum.length - 1];
+    const pl = el("polyline", { class: "hm-path " + cls, points: P.pts.map(p => `${p.x},${p.y}`).join(" ") }, hs);
+    pl.style.setProperty("--len", len); pl.style.strokeDasharray = len; pl.style.strokeDashoffset = len;
+  }
+  for (const c of Object.values(cam)) el("circle", { class: "hm-cam", cx: c.x, cy: c.y, r: 9 }, hs);
+  const found = cam[kidSeq[kidSeq.length - 1]], lost = cam[story.sepCam];
+  el("circle", { class: "hm-found", cx: found.x, cy: found.y, r: 18 }, hs);
+  el("text", { class: "hm-label", x: lost.x + 24, y: lost.y - 22, fill: "var(--alert)" }, hs).textContent = "Lost";
+  el("text", { class: "hm-label", x: found.x - 22, y: found.y + 44, fill: "var(--child)" }, hs).textContent = "Found";
+  // Facts from the real run.
+  $("f-clips").textContent = new Set(run.trace.filter(x => x.type === "ask").flatMap(x => x.clips)).size;
+  $("f-lost").textContent = run.separation.time.slice(0, 5);
+  $("f-now").textContent = run.child_now.camera;
 }
 
 // ================= Part 1: the true story, as a function of mall time =================
@@ -685,6 +861,7 @@ function watch() {
   const desk = family.find(s => s.c === "INF-01");
   story = { family, child: track(c.child), sepT: toSec(c.expected.separation[1]), sepCam: c.expected.separation[0], decoy: track(c.decoys)[0], reportTime: toClock(desk.a + 40) };
   drawMap();
+  drawHeroMap();
   steps = buildSteps();
   states = buildStates();
   renderSteps();
