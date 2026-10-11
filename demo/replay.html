@@ -13,7 +13,7 @@
 :root {
   color-scheme: dark;
   --bg: #091216; --panel: #0f1b21; --panel2: #0b161b; --raise: #14252c; --line: #20363f; --fg: #dde8eb; --muted: #8aa2a9; --faint: #57707a;
-  --family: #5ec4dc; --child: #f2a541; --alert: #e5605a; --ok: #6fcf8f; --zone: #10222a; --zone2: #132a33; --eyes: #b59cf0;
+  --family: #5ec4dc; --child: #f2a541; --alert: #e5605a; --ok: #6fcf8f; --zone: #10222a; --zone2: #132a33; --eyes: #b59cf0; --cai: #14b77f;
   --display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --body: "IBM Plex Sans", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
@@ -32,7 +32,9 @@ code, kbd { font-family: var(--mono); font-size: .9em; }
 .hero h1 { font: 700 clamp(56px, 8vw, 116px)/0.9 var(--display); letter-spacing: .01em; text-transform: uppercase; margin: 0; }
 .hero h1 span { color: var(--child); }
 .tagline { font-size: clamp(19px, 2vw, 24px); color: var(--fg); margin: 0; max-width: 30ch; line-height: 1.4; }
-.tagline b.m { color: var(--family); font-weight: 600; } .tagline b.e { color: var(--eyes); font-weight: 600; }
+.tagline b.m { color: var(--family); font-weight: 600; }
+.cai { display: inline-flex; align-items: center; gap: 8px; color: var(--cai); font: 700 1.35em/1 var(--display); letter-spacing: .02em; vertical-align: -0.12em; white-space: nowrap; }
+.cai img { width: 1.15em; height: 1.15em; border-radius: 22%; box-shadow: 0 0 0 1px rgba(20, 183, 127, .35), 0 6px 18px rgba(20, 183, 127, .25); } .tagline b.e { color: var(--eyes); font-weight: 600; }
 .cta { display: flex; flex-wrap: wrap; gap: 10px; }
 .btn { text-decoration: none; font: 600 15px var(--body); color: var(--fg); border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 11px 20px; transition: transform .2s, border-color .2s, background .2s; }
 .btn:hover { transform: translateY(-2px); border-color: var(--muted); }
@@ -114,6 +116,14 @@ code, kbd { font-family: var(--mono); font-size: .9em; }
 .need .cost { font: 600 15px var(--mono); color: var(--fg); }
 .next { margin: 0; padding-left: 22px; display: grid; gap: 8px; color: var(--muted); font-size: 15px; }
 .next b { color: var(--fg); font-weight: 600; }
+.qgroups { display: grid; gap: 18px; }
+.qgroup { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.qtheme { grid-column: 1 / -1; font: 600 13px var(--display); letter-spacing: .18em; text-transform: uppercase; color: var(--cai); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.q { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.q b { font: 600 19px/1.2 var(--display); letter-spacing: .02em; }
+.q b::before { content: "? "; color: var(--cai); }
+.q p { margin: 0; color: var(--muted); font-size: 14.5px; }
+.q small { color: var(--fg); font-size: 13px; opacity: .8; border-top: 1px dashed var(--line); padding-top: 6px; }
 .runit { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; }
 .runit pre { margin: 0; font: 13.5px/1.6 var(--mono); background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
 
@@ -247,7 +257,7 @@ footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(
   <div class="hero-text">
     <span class="eyebrow">Portfolio project · AI agent + video understanding</span>
     <h1>Lost <span>&amp;</span> Found</h1>
-    <p class="tagline">A child goes missing in a mall. From one description, an agent finds him on the security cameras, using a <b class="m">camera map</b> and <b class="e">CreativAI</b>.</p>
+    <p class="tagline">A child goes missing in a mall. From one description, an agent finds him on the security cameras, using a <b class="m">camera map</b> and <span class="cai"><img src="media/creativai-logo.png" alt="" width="30" height="30">CreativAI</span>.</p>
     <div class="cta">
       <a class="btn primary" href="#part-1">▶ Watch the case</a>
       <a class="btn" href="#built">How it was built</a>
@@ -289,7 +299,7 @@ footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(
   <header>
     <span class="eyebrow">Behind the replay</span>
     <h2>How it was built</h2>
-    <p class="intro">The whole project, end to end: how the footage was made, how CreativAI was used, what each script does, <a href="#works">what works</a>, its <a href="#critique">limits and their fixes</a>, and what a real deployment would cost.</p>
+    <p class="intro">The whole project, end to end: how the footage was made, how CreativAI was used, what each script does, <a href="#works">what works</a>, its <a href="#critique">limits and their fixes</a>, what a real deployment would cost, and the <a href="#questions">research questions</a> it raised.</p>
   </header>
 
   <div>
@@ -393,6 +403,36 @@ footer { max-width: 1100px; margin: 0 auto; padding: 40px 24px 64px; color: var(
       <li><b>Guard confirmation</b> before an alert is sent, and a re-check of the key moment.</li>
       <li><b>Real multi-camera footage</b> (MEVA), then a live-stream pilot.</li>
     </ol>
+  </div>
+
+  <div id="questions">
+    <h3>Open research questions</h3>
+    <p class="muted" style="margin:0 0 16px;max-width:80ch">Building this left me curious about video intelligence in general, and about how CreativAI works under the hood. These are the questions I'd most like to explore, each grounded in something I saw in this project.</p>
+    <div class="qgroups">
+      <div class="qgroup"><span class="qtheme">Accuracy &amp; reliability</span>
+        <div class="q"><b>Can an answer come with a confidence?</b><p>A calibrated confidence per answer would let an agent re-ask, cross-check or hand over to a human only when it matters.</p><small>Why I ask: on the first atrium clip CreativAI was confident, and wrong.</small></div>
+        <div class="q"><b>How are partial matches weighed in a multi-attribute question?</b><p>Is attribute-level grounding available, so "thobe ✓, shemagh ✓, bag ✗" stays a strong match instead of a "no"?</p><small>Why I ask: "not carrying a shopping bag" turned a correct family into a "no".</small></div>
+        <div class="q"><b>How precise is timing inside a chunk?</b><p>Can an event be localised to the frame, and how is that evaluated?</p><small>Why I ask: the separation second ("4") was right within a few seconds, but I couldn't verify it.</small></div>
+      </div>
+      <div class="qgroup"><span class="qtheme">Efficiency &amp; cost</span>
+        <div class="q"><b>Why 16-second chunks?</b><p>How does chunk length trade recall against cost and temporal precision, and could it adapt to the content (busy scenes shorter, empty corridors longer)?</p><small>Why I ask: a 15-second clip became a single search hit with no timing.</small></div>
+        <div class="q"><b>Can indexing be progressive?</b><p>A cheap first pass over a whole time window, then expensive reasoning only on the chunks an agent flags.</p><small>Why I ask: a camera map already narrows each search to a few minutes on a few cameras.</small></div>
+        <div class="q"><b>What bounds the latency of a question round?</b><p>Model inference, queueing or orchestration, and what's achievable when every minute counts?</p><small>Why I ask: each round took about a minute.</small></div>
+      </div>
+      <div class="qgroup"><span class="qtheme">Sustainability</span>
+        <div class="q"><b>What is the compute and energy cost per indexed video-hour?</b><p>How does it compare with running open detectors and re-identification on edge devices, and where is the right split between edge and cloud?</p><small>Why I ask: at this project's rate, always-on indexing of 12 cameras would be ≈ $3,450 a month.</small></div>
+        <div class="q"><b>How do indexes stay valid when models improve?</b><p>Are old embeddings re-indexed, versioned or mixed, and how is accuracy kept stable across camera sites and over time?</p><small>Why I ask: a system that finds people has to be maintainable for years, not just accurate on launch day.</small></div>
+      </div>
+      <div class="qgroup"><span class="qtheme">Evaluation &amp; trust</span>
+        <div class="q"><b>How is end-to-end question answering evaluated?</b><p>Is there a benchmark for natural-language questions over long, multi-camera footage, not only for retrieval?</p><small>Why I ask: I could only grade answers by checking frames myself.</small></div>
+        <div class="q"><b>Can privacy be enforced server-side?</b><p>Queries limited to a time window and camera set, with automatic deletion, so the system fits the rules for public spaces by design.</p><small>Why I ask: this use case only needs one window of one afternoon.</small></div>
+      </div>
+      <div class="qgroup"><span class="qtheme">Computer vision, more broadly</span>
+        <div class="q"><b>Do spatial priors reduce hallucinations?</b><p>Combining a camera-topology graph with a vision-language model worked here; is there measurable evidence that physical constraints make video QA more reliable?</p><small>Why I ask: the map rejected impossible moves that appearance alone couldn't.</small></div>
+        <div class="q"><b>How far can synthetic CCTV go?</b><p>How large is the gap between generated and real surveillance footage, for training and for evaluation?</p><small>Why I ask: every clip here was generated, and they needed human review.</small></div>
+        <div class="q"><b>When should an agent ask a VLM, and when a specialised model?</b><p>Is there work on learned query planning for video, deciding what to ask, about which footage, in what order?</p><small>Why I ask: the agent's questions and rules here were written by hand.</small></div>
+      </div>
+    </div>
   </div>
 
   <div class="runit">
