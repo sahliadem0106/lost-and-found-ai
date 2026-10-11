@@ -34,6 +34,11 @@ const footage = manifest.clips.map(c => ({ ...c, t0: G.toSec(c.start), t1: G.toS
 const lines = [];
 const log = (s = "") => { console.log(s); lines.push(s); };
 const eyes = new Eyes(statePath, log);
+// Structured trace of every step, for the animated replay (demo/replay.html).
+const trace = [];
+const ev = e => trace.push(e);
+const win = w => ({ camera: w.camera, hops: w.hops ?? 0, via: w.via ?? [w.camera], from: G.toClock(Math.max(0, w.from)), to: G.toClock(w.to) });
+const sighting = h => ({ id: h.id, camera: h.camera, time: G.toClock(h.t0), family: h.family, child: h.child, leaves: h.leaves, why: h.why });
 
 // ---------- the questions (same for every case; only the descriptions change) ----------
 const Q = {
@@ -58,10 +63,13 @@ function candidates(windows, seen) {
   return footage.filter(f => !seen.has(f.id) && windows.some(w => w.camera === f.camera && f.t0 <= w.to && f.t1 >= w.from));
 }
 
-async function look(clips) {
+async function look(clips, phase) {
   if (!clips.length) return [];
+  ev({ type: "ask", phase, clips: clips.map(c => c.id) });
   const ans = await eyes.ask(clips.map(c => c.id), questions);
-  return clips.map(c => ({ ...c, ...read(ans[c.id]) }));
+  const out = clips.map(c => ({ ...c, ...read(ans[c.id]) }));
+  ev({ type: "answers", phase, results: out.map(sighting) });
+  return out;
 }
 
 const fmt = s => G.toClock(s);
@@ -74,6 +82,7 @@ const describe = o => `${o.id} @ ${o.camera} (${G.cameras[o.camera].name}) ${fmt
   log(`  child : ${args.child}`);
   log(`  family: ${args.family}`);
   log(`  arrived around ${args.arrived}\n`);
+  ev({ type: "report", ...result.report, questions: Q });
 
   // ① Entry: entrance cameras within ±30 min of the reported arrival.
   const arrived = G.toSec(args.arrived);
@@ -82,12 +91,19 @@ const describe = o => `${o.id} @ ${o.camera} (${G.cameras[o.camera].name}) ${fmt
   const seen = new Set();
   let entryClips = footage.filter(f => entrances.includes(f.camera) && Math.abs(f.t0 - arrived) <= 1800);
   entryClips.forEach(f => seen.add(f.id));
-  let hits = (await look(entryClips)).filter(h => h.family);
-  if (!hits.length) { log("  The family was not found at any entrance. Stopping."); return finish(result); }
+  ev({ type: "map", phase: "entry", who: "adult", from: null, candidates: entryClips.map(c => c.id),
+    windows: entrances.map(c => ({ camera: c, hops: 0, via: [c], from: fmt(arrived - 1800), to: fmt(arrived + 1800) })) });
+  let hits = (await look(entryClips, "entry")).filter(h => h.family);
+  if (!hits.length) {
+    log("  The family was not found at any entrance. Stopping.");
+    ev({ type: "decision", phase: "entry", kind: "stop", text: "The family was not found at any entrance." });
+    return finish(result);
+  }
   let at = hits.sort((a, b) => a.t0 - b.t0)[0];
   const familyPath = [at];
   log(`  ✔ family found: ${describe(at)}; child: ${at.child.replace("_", " ")}\n`);
   result.steps.push({ step: "entry", sighting: at });
+  ev({ type: "decision", phase: "entry", kind: "found", clip: at.id, camera: at.camera, time: fmt(at.t0), child: at.child });
 
   // ② Follow the family forward until the child is no longer with them.
   let separation = null;
@@ -99,8 +115,13 @@ const describe = o => `${o.id} @ ${o.camera} (${G.cameras[o.camera].name}) ${fmt
     const cand = candidates(windows, seen);
     cand.forEach(f => seen.add(f.id));
     log(`  from ${describe(at)} → Map allows ${windows.length} camera windows; footage there: ${cand.map(c => c.id).join(", ") || "none"}`);
-    if (!cand.length) { log("  No more footage on the family's possible path."); break; }
-    const seenHere = await look(cand);
+    ev({ type: "map", phase: "family", who: "adult", from: { camera: at.camera, time: fmt(at.t1), clip: at.id }, windows: windows.map(win), candidates: cand.map(c => c.id) });
+    if (!cand.length) {
+      log("  No more footage on the family's possible path.");
+      ev({ type: "decision", phase: "family", kind: "stop", text: "No more footage on the family's possible path." });
+      break;
+    }
+    const seenHere = await look(cand, "family");
     for (const h of seenHere) log(`    ${h.id} ${h.camera.padEnd(6)} family: ${h.family ? "yes" : "no "}  child: ${h.child.padEnd(11)} leaves at: ${h.leaves ?? "-"}`);
     // Read the footage in time order: the first clip where the described child walks away from
     // adults is the separation, even if a later clip is ambiguous; otherwise the first clip
@@ -111,6 +132,7 @@ const describe = o => `${o.id} @ ${o.camera} (${G.cameras[o.camera].name}) ${fmt
         familyPath.push(h);
         separation = { camera: h.camera, t: h.t0 + h.leaves, clip: h.id };
         log(`  ✔ ${h.id}: the child walks away from the adults ${h.leaves} s into the clip`);
+        ev({ type: "decision", phase: "family", kind: "separation", clip: h.id, camera: h.camera, time: fmt(h.t0 + h.leaves), offset: h.leaves, walk: G.plausibility(at.camera, at.t1, h.camera, h.t0, "adult") });
         break;
       }
       if (h.family) { next = h; break; }
@@ -119,6 +141,7 @@ const describe = o => `${o.id} @ ${o.camera} (${G.cameras[o.camera].name}) ${fmt
     if (!next) { log("  The family doesn't appear in any of it. Stopping the family track."); break; }
     const p = G.plausibility(at.camera, at.t1, next.camera, next.t0, "adult");
     log(`  ✔ next sighting: ${describe(next)} (walk ${p.dist_m} m at ${p.speed} m/s, plausible)`);
+    ev({ type: "decision", phase: "family", kind: "next", clip: next.id, camera: next.camera, time: fmt(next.t0), child: next.child, walk: p });
     if (next.child === "absent" && familyPath.at(-1).child === "with_family") {
       separation = { camera: familyPath.at(-1).camera, t: familyPath.at(-1).t1, clip: familyPath.at(-1).id, approx: true };
     }
@@ -140,16 +163,21 @@ const describe = o => `${o.id} @ ${o.camera} (${G.cameras[o.camera].name}) ${fmt
       .concat([{ camera: cur.camera, from: cur.t1, to: cur.t1 + 240 }]);
     const cand = candidates(windows, new Set([...childPath.map(c => c.id), ...rejected.map(r => r.id), ...familyPath.map(f => f.id)]));
     log(`  from ${cur.camera} ${fmt(cur.t1)} → footage on the child's possible path: ${cand.map(c => c.id).join(", ") || "none"}`);
+    ev({ type: "map", phase: "child", who: "child", from: { camera: cur.camera, time: fmt(cur.t1), clip: cur.id }, windows: windows.map(win), candidates: cand.map(c => c.id) });
     if (!cand.length) break;
-    const seenHere = await look(cand);
+    const seenHere = await look(cand, "child");
     for (const h of seenHere) {
       log(`    ${h.id} ${h.camera.padEnd(6)} child: ${h.child.padEnd(11)} family: ${h.family ? "yes" : "no"}`);
-      if (h.child !== "alone") rejected.push({ id: h.id, camera: h.camera, time: fmt(h.t0), why: h.child === "with_family" || h.child === "with_others" ? "a boy matching the description, but with adults, not alone" : "child not seen" });
+      if (h.child !== "alone") {
+        rejected.push({ id: h.id, camera: h.camera, time: fmt(h.t0), why: h.child === "with_family" || h.child === "with_others" ? "a child matching the description, but with adults, not alone" : "child not seen" });
+        ev({ type: "decision", phase: "child", kind: "reject", clip: h.id, camera: h.camera, time: fmt(h.t0), text: rejected.at(-1).why });
+      }
     }
     const next = seenHere.filter(h => h.child === "alone").sort((a, b) => a.t0 - b.t0)[0];
     if (!next) break;
     const p = G.plausibility(cur.camera, cur.t1, next.camera, next.t0, "child");
     log(`  ✔ child alone: ${describe(next)} (${p.dist_m} m via ${p.via.join(" → ")}, ${p.speed} m/s)`);
+    ev({ type: "decision", phase: "child", kind: "child_alone", clip: next.id, camera: next.camera, time: fmt(next.t0), walk: p });
     childPath.push(next);
     cur = next;
   }
@@ -164,6 +192,7 @@ const describe = o => `${o.id} @ ${o.camera} (${G.cameras[o.camera].name}) ${fmt
     result.alert = `LOST CHILD: ${args.child}. Separated from parents at ${G.cameras[separation.camera].name} (${separation.camera}) around ${fmt(separation.t)}. ` +
       `Path: ${[separation.camera, ...childPath.map(c => c.camera)].join(" → ")}. Last seen ALONE at ${G.cameras[last.camera].name} (${last.camera}) at ${fmt(last.t1)}. Nearest guard: go there now. Proof: clip ${last.id}.`;
     log(`\nALERT → ${result.alert}`);
+    ev({ type: "alert", text: result.alert, child_now: result.child_now, separation: result.separation });
     if (rejected.length) log(`Ignored: ${rejected.map(r => `${r.id} (${r.why})`).join("; ")}`);
   } else log("\nThe child was not seen alone on any reachable camera after the separation.");
   finish(result);
@@ -172,6 +201,7 @@ const describe = o => `${o.id} @ ${o.camera} (${G.cameras[o.camera].name}) ${fmt
     res.creativai_credits = +eyes.creditsUsed.toFixed(1);
     res.seconds = Math.round((Date.now() - t0) / 1000);
     res.log = lines;
+    res.trace = trace;
     const out = path.join(dir, "..", "results", `case-${args.case}-run.json`);
     fs.mkdirSync(path.dirname(out), { recursive: true });
     fs.writeFileSync(out, JSON.stringify(res, null, 2));

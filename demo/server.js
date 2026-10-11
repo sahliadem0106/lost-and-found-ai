@@ -4,7 +4,7 @@
 //   GET  /api/clips?case=A     which camera filmed which clip, and when
 //   GET  /api/result?case=A    the agent's last result for a case
 //   POST /api/find             run the agent on a report; streams its log line by line
-//   GET  /raw/...              the clips (with byte-range support so the video player can seek)
+//   GET  /<file>               any other file under demo/ (replay.html, media/ clips with byte ranges, ...)
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
@@ -12,7 +12,7 @@ const { spawn } = require("child_process");
 
 const PORT = Number(process.env.PORT) || 3000;
 const DEMO = __dirname;
-const TYPES = { ".html": "text/html; charset=utf-8", ".json": "application/json", ".js": "text/javascript", ".mp4": "video/mp4", ".css": "text/css" };
+const TYPES = { ".html": "text/html; charset=utf-8", ".json": "application/json", ".js": "text/javascript", ".mp4": "video/mp4", ".css": "text/css", ".jpg": "image/jpeg", ".png": "image/png" };
 
 function sendFile(req, res, file) {
   fs.stat(file, (err, st) => {
@@ -42,11 +42,6 @@ http.createServer(async (req, res) => {
   if (p === "/api/topology") return sendFile(req, res, path.join(DEMO, "mall_topology.json"));
   if (p === "/api/clips") return sendFile(req, res, path.join(DEMO, "pipeline", `clips-case-${(url.searchParams.get("case") || "A").replace(/[^A-Z]/gi, "")}.json`));
   if (p === "/api/result") return sendFile(req, res, path.join(DEMO, "results", `case-${(url.searchParams.get("case") || "A").replace(/[^A-Z]/gi, "")}-run.json`));
-  if (p.startsWith("/raw/")) {
-    const file = path.normalize(path.join(DEMO, p));
-    if (!file.startsWith(path.join(DEMO, "raw"))) { res.writeHead(403); return res.end(); }
-    return sendFile(req, res, file);
-  }
 
   if (p === "/api/find" && req.method === "POST") {
     let r;
@@ -63,5 +58,8 @@ http.createServer(async (req, res) => {
     return;
   }
 
+  // Everything else: static files under demo/ (replay page, clips, data).
+  const file = path.normalize(path.join(DEMO, p));
+  if (req.method === "GET" && file.startsWith(DEMO + path.sep)) return sendFile(req, res, file);
   res.writeHead(404); res.end("not found");
 }).listen(PORT, () => console.log(`Lost & Found case page: http://localhost:${PORT}`));

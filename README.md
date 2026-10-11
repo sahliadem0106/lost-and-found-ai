@@ -2,7 +2,11 @@
 
 **A child goes missing in a mall. A guard types a description of the child and the family. An agent follows the family across the security cameras, finds where the child was separated and where the child is now, and sends an alert with the video as proof.**
 
-![The case console after a run: the family's path in blue, the separation point in red, the child's path and current position in orange](docs/case-console.png)
+### ▶ [Watch the step-by-step replay](https://sahliadem0106.github.io/newnew/)
+
+[![The replay at the Map step: reachable cameras light up with their time windows, and the clips sent to CreativAI are ringed in purple](docs/replay.png)](https://sahliadem0106.github.io/newnew/)
+
+The replay walks through a real run in 21 animated steps. You see the guard's report typed in, the Map lighting up the cameras a person could reach and when, CreativAI watching each clip and its answers word for word, the path drawing itself across the mall, the separation moment in the video, the lookalike family being ruled out, and the final alert. It runs in the browser with nothing to install. To run it locally, use `npm start` and open http://localhost:3000/replay.html.
 
 It combines two things:
 
@@ -73,9 +77,15 @@ It runs steps ①–⑤ above with three rules:
 
 It prints a step-by-step log and saves everything to `demo/results/case-<X>-run.json`, which the case console draws.
 
+### The replay (`demo/replay.html`)
+
+The agent records a structured **trace** of everything it does (`trace` in `demo/results/case-A-run.json`): each Map calculation with its reachable cameras and time windows, each round of questions, CreativAI's answers word for word, and each decision. The replay is a static page that turns that trace into an animated story with a caption per step. It reads only JSON and the web copies of the clips in `demo/media/`, so it works on GitHub Pages. Add `?step=12` to the address to open a specific step, or `?play=1` to start playing straight away.
+
 ### The case console (`demo/case.html` + `demo/server.js`)
 
-This is a local web page with no dependencies. The guard fills in the report and presses **Find the child**. The server runs the agent and streams its log live, then the page draws the result on the mall map and cues both proof clips to the right second.
+![The case console after a run: the family's path in blue, the separation point in red, the child's path and current position in orange](docs/case-console.png)
+
+This is a local web page with no dependencies, for running the agent live. The guard fills in the report and presses **Find the child**. The server runs the agent and streams its log, then the page draws the result on the mall map and cues both proof clips to the right second.
 
 ## Results on case A
 
@@ -90,7 +100,7 @@ Case A is a family of three arriving at 14:02. The boy (6, red t-shirt) leaves h
 | Lookalike family (A6) | ruled out: boy with adults | trick clip | ✅ |
 | Atrium sighting (A4) | ruled out (wrongly) | the boy crossing the atrium alone | ❌ |
 
-**First run:** about 3 minutes and about 27 CreativAI credits. CreativAI was asked about 6 clips in 3 rounds. **Every rerun:** under 1 second and 0 credits, thanks to the cache.
+**First run:** about 3 minutes and about 27 CreativAI credits. CreativAI was asked about 6 clips in 4 rounds. **Every rerun:** under 1 second and 0 credits, thanks to the cache.
 
 ### Honest limits
 
@@ -111,10 +121,10 @@ You need **Node.js 18+**.
 git clone https://github.com/sahliadem0106/newnew.git
 cd newnew
 npm run find:a      # the agent's full log in the terminal (uses cached CreativAI answers)
-npm start           # then open http://localhost:3000/?show=last
+npm start           # then open http://localhost:3000/replay.html (replay) or http://localhost:3000/?show=last (console)
 ```
 
-On the console, press **Find the child** to watch the agent run live. With the sample report it uses cached answers, so it finishes instantly. The video players need the clips in `demo/raw/case-A/`; see step 3 to make your own.
+On the console, press **Find the child** to watch the agent run live. With the sample report it uses cached answers, so it finishes instantly. The clips play from `demo/media/case-A/`, which holds light 720p web copies (about 1–1.5 MB each).
 
 If you change the descriptions, the questions change too, so the agent asks CreativAI fresh questions and needs a key (step 2).
 
@@ -154,7 +164,7 @@ If you change the descriptions, the questions change too, so the agent asks Crea
    node demo/pipeline/ingest.js demo/pipeline/clips-case-X.json --index  # actually index
    ```
    Every clip is tagged `camera:<id>` and `clip:<id>`, with `camera`, `start_time` and `start_sec` metadata. Progress is saved to `state-<collection>.json`, so a rerun resumes where it stopped. Indexing six 15 s clips cost about 10 credits.
-4. **Run the agent** with `--case X`, and the console with `npm start`. Set `CASE` at the top of the script in `case.html` to switch cases.
+4. **Run the agent** with `--case X`, and the console with `npm start`. Set `CASE` at the top of the script in `case.html` and `replay.html` to switch cases, and put web copies of the clips in `demo/media/case-X/<id>.mp4` plus a `<id>.jpg` poster (for example: `ffmpeg -i A1.mp4 -vf scale=-2:720 -crf 27 -an -movflags +faststart A1.mp4`).
 
 Optional: try raw search with `node demo/pipeline/search.js demo/pipeline/state-<collection>.json "a boy in a red t-shirt" camera:fc-02`.
 
@@ -178,7 +188,9 @@ Total for 7 character sheets and 14 clips: **about $15**.
 | `demo/pipeline/find-child.js` | The agent: report → entry → family → separation → child → alert |
 | `demo/pipeline/ingest.js`, `search.js`, `creativai.js` | Upload/index footage, raw search, small REST client |
 | `demo/pipeline/clips-case-A.json`, `state-*.json`, `cache-*.json` | Case A footage list, CreativAI IDs, cached answers |
+| `demo/replay.html`, `index.html` | The animated step-by-step replay (`index.html` sends GitHub Pages visitors to it) |
 | `demo/server.js`, `demo/case.html` | The case console |
+| `demo/media/case-A/` | Web copies of clips A1–A6 with poster images |
 | `demo/results/case-A-run.json` | The agent's result for case A |
 | `demo/mall_topology.json` | Cameras, walkways, walking speeds, true story timelines |
 | `demo/camera-network.html` | Interactive camera map with the planned story (design-stage page) |

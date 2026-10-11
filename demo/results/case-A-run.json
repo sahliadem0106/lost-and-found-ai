@@ -63,13 +63,13 @@
       "id": "A4",
       "camera": "ATR-01",
       "time": "14:19:50",
-      "why": "a boy matching the description, but with adults, not alone"
+      "why": "a child matching the description, but with adults, not alone"
     },
     {
       "id": "A6",
       "camera": "FC-01",
       "time": "14:24:00",
-      "why": "a boy matching the description, but with adults, not alone"
+      "why": "a child matching the description, but with adults, not alone"
     }
   ],
   "child_now": {
@@ -108,6 +108,856 @@
     "  from FC-02 14:23:05 → footage on the child's possible path: none",
     "\n⑤ CHILD NOW: last seen alone at FC-02 (Food court counters), 14:23:05, clip A5",
     "\nALERT → LOST CHILD: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers. Separated from parents at TechZone (electronics) (STR-B) around 14:19:04. Path: STR-B → FC-02. Last seen ALONE at Food court counters (FC-02) at 14:23:05. Nearest guard: go there now. Proof: clip A5.",
-    "Ignored: A4 (a boy matching the description, but with adults, not alone); A6 (a boy matching the description, but with adults, not alone)"
+    "Ignored: A4 (a child matching the description, but with adults, not alone); A6 (a child matching the description, but with adults, not alone)"
+  ],
+  "trace": [
+    {
+      "type": "report",
+      "child": "a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers",
+      "family": "a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf",
+      "arrived": "14:00",
+      "questions": {
+        "family": "Are these adults visible in this video: a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf? Start your answer with \"yes\" or \"no\", then give one short reason.",
+        "child": "Look for this child: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers. Start your answer with exactly one of: \"with these adults\" (the child is together with a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf), \"alone\" (the child has no adult with them at the end of the video), \"with other adults\", or \"not present\". Then give one short reason.",
+        "leaves": "If the child (a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers) walks away from the adults they came with in this video, at what second does it happen? Answer with the number of seconds only, or \"none\"."
+      }
+    },
+    {
+      "type": "map",
+      "phase": "entry",
+      "who": "adult",
+      "from": null,
+      "candidates": [
+        "A1"
+      ],
+      "windows": [
+        {
+          "camera": "ENT-01",
+          "hops": 0,
+          "via": [
+            "ENT-01"
+          ],
+          "from": "13:30:00",
+          "to": "14:30:00"
+        },
+        {
+          "camera": "ENT-02",
+          "hops": 0,
+          "via": [
+            "ENT-02"
+          ],
+          "from": "13:30:00",
+          "to": "14:30:00"
+        }
+      ]
+    },
+    {
+      "type": "ask",
+      "phase": "entry",
+      "clips": [
+        "A1"
+      ]
+    },
+    {
+      "type": "answers",
+      "phase": "entry",
+      "results": [
+        {
+          "id": "A1",
+          "camera": "ENT-01",
+          "time": "14:02:00",
+          "family": true,
+          "child": "with_family",
+          "leaves": null,
+          "why": {
+            "family": "Yes, these adults are clearly visible walking together through the mall lobby.",
+            "child": "with these adults",
+            "leaves": "none"
+          }
+        }
+      ]
+    },
+    {
+      "type": "decision",
+      "phase": "entry",
+      "kind": "found",
+      "clip": "A1",
+      "camera": "ENT-01",
+      "time": "14:02:00",
+      "child": "with_family"
+    },
+    {
+      "type": "map",
+      "phase": "family",
+      "who": "adult",
+      "from": {
+        "camera": "ENT-01",
+        "time": "14:02:15",
+        "clip": "A1"
+      },
+      "windows": [
+        {
+          "camera": "ATR-01",
+          "hops": 1,
+          "via": [
+            "ENT-01",
+            "ATR-01"
+          ],
+          "from": "14:02:29",
+          "to": "14:17:57"
+        },
+        {
+          "camera": "COR-W",
+          "hops": 2,
+          "via": [
+            "ENT-01",
+            "ATR-01",
+            "COR-W"
+          ],
+          "from": "14:02:43",
+          "to": "14:18:38"
+        },
+        {
+          "camera": "COR-E",
+          "hops": 2,
+          "via": [
+            "ENT-01",
+            "ATR-01",
+            "COR-E"
+          ],
+          "from": "14:02:43",
+          "to": "14:18:38"
+        },
+        {
+          "camera": "STR-B",
+          "hops": 2,
+          "via": [
+            "ENT-01",
+            "ATR-01",
+            "STR-B"
+          ],
+          "from": "14:02:40",
+          "to": "14:18:30"
+        },
+        {
+          "camera": "INF-01",
+          "hops": 2,
+          "via": [
+            "ENT-01",
+            "ATR-01",
+            "INF-01"
+          ],
+          "from": "14:02:41",
+          "to": "14:18:33"
+        },
+        {
+          "camera": "STR-A",
+          "hops": 3,
+          "via": [
+            "ENT-01",
+            "ATR-01",
+            "COR-W",
+            "STR-A"
+          ],
+          "from": "14:02:53",
+          "to": "14:19:08"
+        },
+        {
+          "camera": "FC-01",
+          "hops": 3,
+          "via": [
+            "ENT-01",
+            "ATR-01",
+            "COR-W",
+            "FC-01"
+          ],
+          "from": "14:02:53",
+          "to": "14:19:08"
+        },
+        {
+          "camera": "STR-C",
+          "hops": 3,
+          "via": [
+            "ENT-01",
+            "ATR-01",
+            "COR-E",
+            "STR-C"
+          ],
+          "from": "14:02:53",
+          "to": "14:19:08"
+        },
+        {
+          "camera": "WC-01",
+          "hops": 3,
+          "via": [
+            "ENT-01",
+            "ATR-01",
+            "COR-E",
+            "WC-01"
+          ],
+          "from": "14:02:53",
+          "to": "14:19:08"
+        },
+        {
+          "camera": "ENT-02",
+          "hops": 3,
+          "via": [
+            "ENT-01",
+            "ATR-01",
+            "COR-E",
+            "ENT-02"
+          ],
+          "from": "14:02:53",
+          "to": "14:19:08"
+        },
+        {
+          "camera": "ENT-01",
+          "hops": 0,
+          "via": [
+            "ENT-01"
+          ],
+          "from": "14:02:15",
+          "to": "14:17:15"
+        }
+      ],
+      "candidates": [
+        "A2"
+      ]
+    },
+    {
+      "type": "ask",
+      "phase": "family",
+      "clips": [
+        "A2"
+      ]
+    },
+    {
+      "type": "answers",
+      "phase": "family",
+      "results": [
+        {
+          "id": "A2",
+          "camera": "STR-A",
+          "time": "14:08:00",
+          "family": true,
+          "child": "with_family",
+          "leaves": null,
+          "why": {
+            "family": "yes, both adults matching the descriptions are clearly visible in the clothing store.",
+            "child": "with these adults",
+            "leaves": "none"
+          }
+        }
+      ]
+    },
+    {
+      "type": "decision",
+      "phase": "family",
+      "kind": "next",
+      "clip": "A2",
+      "camera": "STR-A",
+      "time": "14:08:00",
+      "child": "with_family",
+      "walk": {
+        "ok": true,
+        "speed": 0.2,
+        "score": 0.79,
+        "dist_m": 68,
+        "via": [
+          "ENT-01",
+          "ATR-01",
+          "COR-W",
+          "STR-A"
+        ]
+      }
+    },
+    {
+      "type": "map",
+      "phase": "family",
+      "who": "adult",
+      "from": {
+        "camera": "STR-A",
+        "time": "14:08:15",
+        "clip": "A2"
+      },
+      "windows": [
+        {
+          "camera": "COR-W",
+          "hops": 1,
+          "via": [
+            "STR-A",
+            "COR-W"
+          ],
+          "from": "14:08:25",
+          "to": "14:23:45"
+        },
+        {
+          "camera": "ATR-01",
+          "hops": 2,
+          "via": [
+            "STR-A",
+            "COR-W",
+            "ATR-01"
+          ],
+          "from": "14:08:39",
+          "to": "14:24:27"
+        },
+        {
+          "camera": "FC-01",
+          "hops": 2,
+          "via": [
+            "STR-A",
+            "COR-W",
+            "FC-01"
+          ],
+          "from": "14:08:35",
+          "to": "14:24:15"
+        },
+        {
+          "camera": "ENT-01",
+          "hops": 3,
+          "via": [
+            "STR-A",
+            "COR-W",
+            "ATR-01",
+            "ENT-01"
+          ],
+          "from": "14:08:53",
+          "to": "14:25:08"
+        },
+        {
+          "camera": "COR-E",
+          "hops": 3,
+          "via": [
+            "STR-A",
+            "COR-W",
+            "ATR-01",
+            "COR-E"
+          ],
+          "from": "14:08:53",
+          "to": "14:25:08"
+        },
+        {
+          "camera": "STR-B",
+          "hops": 3,
+          "via": [
+            "STR-A",
+            "COR-W",
+            "ATR-01",
+            "STR-B"
+          ],
+          "from": "14:08:50",
+          "to": "14:25:00"
+        },
+        {
+          "camera": "INF-01",
+          "hops": 3,
+          "via": [
+            "STR-A",
+            "COR-W",
+            "ATR-01",
+            "INF-01"
+          ],
+          "from": "14:08:51",
+          "to": "14:25:03"
+        },
+        {
+          "camera": "FC-02",
+          "hops": 3,
+          "via": [
+            "STR-A",
+            "COR-W",
+            "FC-01",
+            "FC-02"
+          ],
+          "from": "14:08:42",
+          "to": "14:24:35"
+        },
+        {
+          "camera": "STR-A",
+          "hops": 0,
+          "via": [
+            "STR-A"
+          ],
+          "from": "14:08:15",
+          "to": "14:23:15"
+        }
+      ],
+      "candidates": [
+        "A3",
+        "A4",
+        "A5",
+        "A6"
+      ]
+    },
+    {
+      "type": "ask",
+      "phase": "family",
+      "clips": [
+        "A3",
+        "A4",
+        "A5",
+        "A6"
+      ]
+    },
+    {
+      "type": "answers",
+      "phase": "family",
+      "results": [
+        {
+          "id": "A3",
+          "camera": "STR-B",
+          "time": "14:19:00",
+          "family": false,
+          "child": "alone",
+          "leaves": 4,
+          "why": {
+            "family": "no. The man in the video is not carrying a shopping bag.",
+            "child": "alone. The child is at the store exit by himself while the adults are still at the display table.",
+            "leaves": "4"
+          }
+        },
+        {
+          "id": "A4",
+          "camera": "ATR-01",
+          "time": "14:19:50",
+          "family": true,
+          "child": "with_family",
+          "leaves": 11,
+          "why": {
+            "family": "yes. They are walking together on the ground floor of the mall, approaching the fountain from the right.",
+            "child": "with these adults. The child is seen walking alongside these adults starting at 00:08 and remains with them as they approach the fountain.",
+            "leaves": "11"
+          }
+        },
+        {
+          "id": "A5",
+          "camera": "FC-02",
+          "time": "14:22:50",
+          "family": false,
+          "child": "alone",
+          "leaves": null,
+          "why": {
+            "family": "no. They are not present in the video.",
+            "child": "alone",
+            "leaves": "none"
+          }
+        },
+        {
+          "id": "A6",
+          "camera": "FC-01",
+          "time": "14:24:00",
+          "family": false,
+          "child": "with_others",
+          "leaves": 10,
+          "why": {
+            "family": "no. While a couple in similar clothing is shown, the man is not carrying a dark green shopping bag.",
+            "child": "with other adults. The boy is seen with a man and woman at a table who match the clothing descriptions but do not have the specified dark green bag.",
+            "leaves": "10"
+          }
+        }
+      ]
+    },
+    {
+      "type": "decision",
+      "phase": "family",
+      "kind": "separation",
+      "clip": "A3",
+      "camera": "STR-B",
+      "time": "14:19:04",
+      "offset": 4,
+      "walk": {
+        "ok": true,
+        "speed": 0.1,
+        "score": 0.6,
+        "dist_m": 63,
+        "via": [
+          "STR-A",
+          "COR-W",
+          "ATR-01",
+          "STR-B"
+        ]
+      }
+    },
+    {
+      "type": "map",
+      "phase": "child",
+      "who": "child",
+      "from": {
+        "camera": "STR-B",
+        "time": "14:19:04",
+        "clip": "A3"
+      },
+      "windows": [
+        {
+          "camera": "ATR-01",
+          "hops": 1,
+          "via": [
+            "STR-B",
+            "ATR-01"
+          ],
+          "from": "14:19:17",
+          "to": "14:23:54"
+        },
+        {
+          "camera": "ENT-01",
+          "hops": 2,
+          "via": [
+            "STR-B",
+            "ATR-01",
+            "ENT-01"
+          ],
+          "from": "14:19:32",
+          "to": "14:24:57"
+        },
+        {
+          "camera": "COR-W",
+          "hops": 2,
+          "via": [
+            "STR-B",
+            "ATR-01",
+            "COR-W"
+          ],
+          "from": "14:19:32",
+          "to": "14:24:57"
+        },
+        {
+          "camera": "COR-E",
+          "hops": 2,
+          "via": [
+            "STR-B",
+            "ATR-01",
+            "COR-E"
+          ],
+          "from": "14:19:32",
+          "to": "14:24:57"
+        },
+        {
+          "camera": "INF-01",
+          "hops": 2,
+          "via": [
+            "STR-B",
+            "ATR-01",
+            "INF-01"
+          ],
+          "from": "14:19:30",
+          "to": "14:24:49"
+        },
+        {
+          "camera": "STR-A",
+          "hops": 3,
+          "via": [
+            "STR-B",
+            "ATR-01",
+            "COR-W",
+            "STR-A"
+          ],
+          "from": "14:19:43",
+          "to": "14:25:42"
+        },
+        {
+          "camera": "FC-01",
+          "hops": 3,
+          "via": [
+            "STR-B",
+            "ATR-01",
+            "COR-W",
+            "FC-01"
+          ],
+          "from": "14:19:43",
+          "to": "14:25:42"
+        },
+        {
+          "camera": "STR-C",
+          "hops": 3,
+          "via": [
+            "STR-B",
+            "ATR-01",
+            "COR-E",
+            "STR-C"
+          ],
+          "from": "14:19:43",
+          "to": "14:25:42"
+        },
+        {
+          "camera": "WC-01",
+          "hops": 3,
+          "via": [
+            "STR-B",
+            "ATR-01",
+            "COR-E",
+            "WC-01"
+          ],
+          "from": "14:19:43",
+          "to": "14:25:42"
+        },
+        {
+          "camera": "ENT-02",
+          "hops": 3,
+          "via": [
+            "STR-B",
+            "ATR-01",
+            "COR-E",
+            "ENT-02"
+          ],
+          "from": "14:19:43",
+          "to": "14:25:42"
+        },
+        {
+          "camera": "FC-02",
+          "hops": 4,
+          "via": [
+            "STR-B",
+            "ATR-01",
+            "COR-W",
+            "FC-01",
+            "FC-02"
+          ],
+          "from": "14:19:51",
+          "to": "14:26:12"
+        },
+        {
+          "camera": "STR-B",
+          "hops": 0,
+          "via": [
+            "STR-B"
+          ],
+          "from": "14:19:04",
+          "to": "14:23:04"
+        }
+      ],
+      "candidates": [
+        "A4",
+        "A5",
+        "A6"
+      ]
+    },
+    {
+      "type": "ask",
+      "phase": "child",
+      "clips": [
+        "A4",
+        "A5",
+        "A6"
+      ]
+    },
+    {
+      "type": "answers",
+      "phase": "child",
+      "results": [
+        {
+          "id": "A4",
+          "camera": "ATR-01",
+          "time": "14:19:50",
+          "family": true,
+          "child": "with_family",
+          "leaves": 11,
+          "why": {
+            "family": "yes. They are walking together on the ground floor of the mall, approaching the fountain from the right.",
+            "child": "with these adults. The child is seen walking alongside these adults starting at 00:08 and remains with them as they approach the fountain.",
+            "leaves": "11"
+          }
+        },
+        {
+          "id": "A5",
+          "camera": "FC-02",
+          "time": "14:22:50",
+          "family": false,
+          "child": "alone",
+          "leaves": null,
+          "why": {
+            "family": "no. They are not present in the video.",
+            "child": "alone",
+            "leaves": "none"
+          }
+        },
+        {
+          "id": "A6",
+          "camera": "FC-01",
+          "time": "14:24:00",
+          "family": false,
+          "child": "with_others",
+          "leaves": 10,
+          "why": {
+            "family": "no. While a couple in similar clothing is shown, the man is not carrying a dark green shopping bag.",
+            "child": "with other adults. The boy is seen with a man and woman at a table who match the clothing descriptions but do not have the specified dark green bag.",
+            "leaves": "10"
+          }
+        }
+      ]
+    },
+    {
+      "type": "decision",
+      "phase": "child",
+      "kind": "reject",
+      "clip": "A4",
+      "camera": "ATR-01",
+      "time": "14:19:50",
+      "text": "a child matching the description, but with adults, not alone"
+    },
+    {
+      "type": "decision",
+      "phase": "child",
+      "kind": "reject",
+      "clip": "A6",
+      "camera": "FC-01",
+      "time": "14:24:00",
+      "text": "a child matching the description, but with adults, not alone"
+    },
+    {
+      "type": "decision",
+      "phase": "child",
+      "kind": "child_alone",
+      "clip": "A5",
+      "camera": "FC-02",
+      "time": "14:22:50",
+      "walk": {
+        "ok": true,
+        "speed": 0.33,
+        "score": 1,
+        "dist_m": 75,
+        "via": [
+          "STR-B",
+          "ATR-01",
+          "COR-W",
+          "FC-01",
+          "FC-02"
+        ]
+      }
+    },
+    {
+      "type": "map",
+      "phase": "child",
+      "who": "child",
+      "from": {
+        "camera": "FC-02",
+        "time": "14:23:05",
+        "clip": "A5"
+      },
+      "windows": [
+        {
+          "camera": "FC-01",
+          "hops": 1,
+          "via": [
+            "FC-02",
+            "FC-01"
+          ],
+          "from": "14:23:13",
+          "to": "14:27:35"
+        },
+        {
+          "camera": "COR-W",
+          "hops": 2,
+          "via": [
+            "FC-02",
+            "FC-01",
+            "COR-W"
+          ],
+          "from": "14:23:24",
+          "to": "14:28:20"
+        },
+        {
+          "camera": "ATR-01",
+          "hops": 3,
+          "via": [
+            "FC-02",
+            "FC-01",
+            "COR-W",
+            "ATR-01"
+          ],
+          "from": "14:23:39",
+          "to": "14:29:23"
+        },
+        {
+          "camera": "STR-A",
+          "hops": 3,
+          "via": [
+            "FC-02",
+            "FC-01",
+            "COR-W",
+            "STR-A"
+          ],
+          "from": "14:23:35",
+          "to": "14:29:05"
+        },
+        {
+          "camera": "ENT-01",
+          "hops": 4,
+          "via": [
+            "FC-02",
+            "FC-01",
+            "COR-W",
+            "ATR-01",
+            "ENT-01"
+          ],
+          "from": "14:23:55",
+          "to": "14:30:25"
+        },
+        {
+          "camera": "COR-E",
+          "hops": 4,
+          "via": [
+            "FC-02",
+            "FC-01",
+            "COR-W",
+            "ATR-01",
+            "COR-E"
+          ],
+          "from": "14:23:55",
+          "to": "14:30:25"
+        },
+        {
+          "camera": "STR-B",
+          "hops": 4,
+          "via": [
+            "FC-02",
+            "FC-01",
+            "COR-W",
+            "ATR-01",
+            "STR-B"
+          ],
+          "from": "14:23:52",
+          "to": "14:30:13"
+        },
+        {
+          "camera": "INF-01",
+          "hops": 4,
+          "via": [
+            "FC-02",
+            "FC-01",
+            "COR-W",
+            "ATR-01",
+            "INF-01"
+          ],
+          "from": "14:23:53",
+          "to": "14:30:18"
+        },
+        {
+          "camera": "FC-02",
+          "hops": 0,
+          "via": [
+            "FC-02"
+          ],
+          "from": "14:23:05",
+          "to": "14:27:05"
+        }
+      ],
+      "candidates": []
+    },
+    {
+      "type": "alert",
+      "text": "LOST CHILD: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers. Separated from parents at TechZone (electronics) (STR-B) around 14:19:04. Path: STR-B → FC-02. Last seen ALONE at Food court counters (FC-02) at 14:23:05. Nearest guard: go there now. Proof: clip A5.",
+      "child_now": {
+        "camera": "FC-02",
+        "name": "Food court counters",
+        "last_seen": "14:23:05",
+        "clip": "A5"
+      },
+      "separation": {
+        "camera": "STR-B",
+        "time": "14:19:04",
+        "clip": "A3"
+      }
+    }
   ]
 }

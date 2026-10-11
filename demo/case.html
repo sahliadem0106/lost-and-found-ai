@@ -207,7 +207,7 @@ function drawResult(res) {
 }
 
 // ---------- evidence ----------
-const clipUrl = id => "/" + clips.find(c => c.id === id).file.replace(/^demo\//, "");
+const clipUrl = id => `/media/case-${CASE}/${id}.mp4`; // light web copies of the clips
 function videoCard(target, title, meta, clipId, atSec) {
   target.className = "";
   target.innerHTML = `<h3></h3><div class="meta"></div><video controls muted playsinline preload="metadata"></video>`;

@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lost &amp; Found Replay</title>
+<meta name="description" content="Step-by-step replay of an AI agent finding a lost child across mall security cameras, using a camera graph and CreativAI video understanding.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Security control-room look, shared with case.html. The replay is a story: map on the left,
+   what is happening right now on the right, a scrubber underneath. */
+:root {
+  color-scheme: dark;
+  --bg: #0d171b; --panel: #13222a; --panel2: #0f1c22; --line: #27404a; --fg: #d8e5e8; --muted: #8ba3aa;
+  --family: #5ec4dc; --child: #f2a541; --alert: #e5605a; --ok: #6fcf8f; --zone: #172b33; --eyes: #b59cf0;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.55; padding: 20px 16px 48px; }
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 18px; }
+a { color: var(--family); }
+header { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: end; justify-content: space-between; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(28px, 4vw, 40px); letter-spacing: .04em; text-transform: uppercase; margin: 0; line-height: 1.05; }
+.sub { color: var(--muted); margin: 6px 0 0; max-width: 78ch; }
+.clock { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.clock b { display: block; font-size: 34px; font-weight: 500; color: var(--fg); line-height: 1; }
+.clock small { color: var(--muted); letter-spacing: .12em; text-transform: uppercase; font-size: 11px; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 18px; letter-spacing: .1em; text-transform: uppercase; margin: 0; color: var(--muted); }
+.chapters { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.chapters li { font: 600 13px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; transition: all .3s; }
+.chapters li.done { color: var(--fg); border-color: var(--muted); }
+.chapters li.on { color: var(--bg); background: var(--child); border-color: var(--child); }
+.main { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 960px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+svg { width: 100%; height: auto; display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--muted); font-size: 12.5px; margin-top: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+
+/* The "now" panel */
+.now { display: grid; gap: 14px; min-height: 520px; align-content: start; }
+.who { display: inline-flex; gap: 8px; align-items: center; font: 600 13px var(--display); letter-spacing: .12em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; justify-self: start; }
+.who.map { background: color-mix(in srgb, var(--family) 18%, transparent); color: var(--family); }
+.who.eyes { background: color-mix(in srgb, var(--eyes) 18%, transparent); color: var(--eyes); }
+.who.agent { background: color-mix(in srgb, var(--child) 18%, transparent); color: var(--child); }
+.who.alert { background: color-mix(in srgb, var(--alert) 22%, transparent); color: var(--alert); }
+.now h3 { font-family: var(--display); font-weight: 600; font-size: clamp(24px, 2.6vw, 30px); line-height: 1.1; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+.now p { margin: 0; max-width: 62ch; }
+.muted { color: var(--muted); }
+.mono { font-family: var(--mono); font-size: 13px; }
+.report { background: var(--panel2); border: 1px dashed var(--line); border-radius: 6px; padding: 12px 14px; display: grid; gap: 8px; }
+.report div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; }
+.report dt, .k { color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: .06em; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 12.5px var(--mono); border: 1px solid var(--line); border-radius: 4px; padding: 3px 8px; background: var(--panel2); opacity: 0; transform: translateY(4px); animation: in .35s forwards; }
+.chip.has { border-color: var(--fg); color: var(--fg); }
+.chip.dim { color: var(--muted); }
+@keyframes in { to { opacity: 1; transform: none; } }
+.qs { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.qs li::marker { color: var(--eyes); font-family: var(--mono); }
+details { font-size: 13px; color: var(--muted); }
+details pre { white-space: pre-wrap; font: 12px/1.5 var(--mono); background: var(--panel2); padding: 10px; border-radius: 4px; border: 1px solid var(--line); }
+.clips { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.clip { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; display: grid; transition: border-color .3s, opacity .3s; }
+.clip video { width: 100%; aspect-ratio: 16 / 9; display: block; background: #000; object-fit: cover; }
+.clip .cap { padding: 8px 10px; display: grid; gap: 4px; font-size: 13px; }
+.clip .cap b { font: 600 15px var(--display); letter-spacing: .04em; }
+.clip.watching video { animation: scan 1.6s ease-in-out infinite; }
+@keyframes scan { 50% { filter: brightness(1.25) saturate(1.2); } }
+.clip.pick { border-color: var(--ok); box-shadow: 0 0 0 1px var(--ok); }
+.clip.sep { border-color: var(--alert); box-shadow: 0 0 0 1px var(--alert); }
+.clip.rej { opacity: .55; }
+.ans { display: grid; gap: 3px; font-size: 12.5px; }
+.ans q { quotes: "“" "”"; color: var(--fg); }
+.verdict { display: flex; flex-wrap: wrap; gap: 4px; }
+.v { font: 600 11.5px var(--mono); padding: 1px 6px; border-radius: 3px; background: var(--zone); color: var(--muted); }
+.v.y { color: var(--bg); background: var(--ok); } .v.a { color: var(--bg); background: var(--child); } .v.r { color: var(--bg); background: var(--alert); }
+.big video { width: 100%; border-radius: 6px; aspect-ratio: 16 / 9; background: #000; display: block; }
+.stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.stat div { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+.stat b { display: block; font: 600 26px var(--display); }
+.alertbox { border: 1px solid var(--alert); background: color-mix(in srgb, var(--alert) 12%, var(--panel)); border-radius: 6px; padding: 12px 14px; }
+.thinking { display: inline-flex; gap: 4px; }
+.thinking i { width: 7px; height: 7px; border-radius: 50%; background: var(--eyes); animation: dot 1s infinite; }
+.thinking i:nth-child(2) { animation-delay: .15s; } .thinking i:nth-child(3) { animation-delay: .3s; }
+@keyframes dot { 50% { opacity: .2; transform: translateY(-3px); } }
+
+/* Controls */
+.controls { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+.btns { display: flex; gap: 8px; }
+button { font: 600 13px var(--body); color: var(--fg); background: var(--zone); border: 1px solid var(--line); border-radius: 4px; padding: 8px 14px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--child); color: var(--bg); border-color: var(--child); min-width: 92px; }
+button:focus-visible { outline: 2px solid var(--child); outline-offset: 2px; }
+.track { display: flex; gap: 3px; align-items: center; }
+.track button { flex: 1; height: 10px; padding: 0; border-radius: 2px; border: 0; background: var(--line); min-width: 6px; }
+.track button.done { background: var(--muted); }
+.track button.on { background: var(--child); }
+.count { font: 500 13px var(--mono); color: var(--muted); white-space: nowrap; }
+@media (max-width: 640px) { .controls { grid-template-columns: minmax(0, 1fr); } }
+
+/* How-it-works */
+.how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 900px) { .how { grid-template-columns: minmax(0, 1fr); } }
+.how h3 { font: 600 22px var(--display); margin: 6px 0; }
+.how p { margin: 0; color: var(--muted); }
+footer { color: var(--muted); font-size: 13px; }
+
+/* SVG */
+.zone { fill: var(--zone); stroke: var(--line); stroke-width: 1.5; }
+.zlabel { fill: var(--muted); font: 600 15px var(--display); letter-spacing: .1em; text-transform: uppercase; }
+.edge { stroke: var(--line); stroke-width: 2.5; stroke-dasharray: 6 5; }
+.dist { fill: var(--muted); font: 500 11px var(--mono); }
+.cam { fill: var(--panel); stroke: var(--muted); stroke-width: 2; transition: fill .3s, stroke .3s; }
+.cam.has { stroke: var(--fg); }
+.cam.fam { fill: var(--family); stroke: var(--family); }
+.cam.kid { fill: var(--child); stroke: var(--child); }
+.cam.rej { stroke-dasharray: 3 3; }
+.camid { fill: var(--fg); font: 500 12px var(--mono); pointer-events: none; }
+.reach { fill: none; stroke: var(--family); stroke-width: 6; opacity: .35; stroke-linecap: round; }
+.reach.kid { stroke: var(--child); }
+.glow { fill: var(--family); opacity: .18; }
+.glow.kid { fill: var(--child); }
+.cand { fill: none; stroke: var(--eyes); stroke-width: 3; }
+.wlabel { font: 500 11px var(--mono); fill: var(--fg); paint-order: stroke; stroke: var(--bg); stroke-width: 4px; }
+.leg { fill: none; stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; }
+.leg.fam { stroke: var(--family); }
+.leg.kid { stroke: var(--child); stroke-dasharray: 2 9; }
+.draw { transition: stroke-dashoffset 1.6s ease-in-out; }
+.sepring { fill: none; stroke: var(--alert); stroke-width: 4; }
+.burst { fill: none; stroke: var(--alert); stroke-width: 3; animation: burst 1.4s ease-out 2; transform-box: fill-box; transform-origin: center; }
+.pulse { fill: none; stroke: var(--child); stroke-width: 3; animation: burst 1.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes burst { from { opacity: 1; transform: scale(.5); } to { opacity: 0; transform: scale(2.6); } }
+.xmark { stroke: var(--alert); stroke-width: 3; stroke-linecap: round; }
+.pin { font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; paint-order: stroke; stroke: var(--bg); stroke-width: 4px; }
+.eye { fill: var(--eyes); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Lost &amp; Found · How the agent found the boy</h1>
+      <p class="sub">A replay of a real run, step by step. A <b style="color:var(--family)">camera map</b> decides where a person could physically be. <b style="color:var(--eyes)">CreativAI</b> watches only that footage and answers questions about it. The <b style="color:var(--child)">agent</b> joins the two until it knows where the child got lost and where the child is now.</p>
+    </div>
+    <div class="clock"><small>Mall time</small><b id="clock">13:58:00</b></div>
+  </header>
+
+  <ol class="chapters" id="chapters" aria-label="Chapters">
+    <li data-ch="report">The report</li><li data-ch="entry">Find the family</li><li data-ch="family">Follow the family</li><li data-ch="sep">Separation</li><li data-ch="child">Follow the child</li><li data-ch="alert">Alert</li>
+  </ol>
+
+  <div class="main">
+    <section class="panel" aria-label="Mall map">
+      <h2>Al-Noor Mall · ground floor · 12 cameras</h2>
+      <svg id="plan" viewBox="0 0 1040 640" role="img" aria-label="Floor plan with cameras, walkways and the agent's progress"></svg>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--family)"></i>Family</span>
+        <span><i class="sw" style="background:var(--child)"></i>Child</span>
+        <span><i class="sw" style="border:3px solid var(--eyes)"></i>Clip sent to CreativAI</span>
+        <span><i class="sw" style="border:2px solid var(--fg)"></i>Camera with footage</span>
+        <span><i class="sw" style="border:3px solid var(--alert)"></i>Separation</span>
+      </div>
+    </section>
+
+    <section class="panel now" id="now" aria-live="polite"></section>
+  </div>
+
+  <section class="panel controls" aria-label="Replay controls">
+    <div class="btns">
+      <button id="prev" type="button" aria-label="Previous step">◀</button>
+      <button id="play" type="button" class="primary">▶ Play</button>
+      <button id="next" type="button" aria-label="Next step">▶</button>
+    </div>
+    <div class="track" id="track" role="group" aria-label="Steps"></div>
+    <span class="count" id="count"></span>
+  </section>
+
+  <section class="how" aria-label="How it works">
+    <div class="panel"><span class="who map">The Map</span><h3>Where could they be?</h3><p>Our own code, no AI. It knows the 12 cameras, the walkways between them in metres, and that adults walk 0.6–1.8 m/s and children 0.4–1.6 m/s. From one sighting it works out which cameras are reachable next and in which minutes. Footage outside those windows is never looked at.</p></div>
+    <div class="panel"><span class="who eyes">The Eyes · CreativAI</span><h3>What is in this clip?</h3><p>For the clips the Map picked, CreativAI builds a data plate and answers three questions per clip: is the family here, is the child with them or alone, and at what second does the child walk away? The answers are cached, so a replay costs nothing.</p></div>
+    <div class="panel"><span class="who agent">The agent</span><h3>Join the dots</h3><p>It follows the family in time order until the child walks away, then follows the child, counting only sightings where the child is alone. Lookalikes with adults are ruled out. Every move is checked against walking speed. Then it alerts the nearest guard.</p></div>
+  </section>
+
+  <footer>Footage is AI-generated for this demo (Kling via Higgsfield); the agent's run and CreativAI's answers are real. Code, tutorial and honest limits: <a href="https://github.com/sahliadem0106/newnew">github.com/sahliadem0106/newnew</a>. Keys: <kbd>←</kbd> <kbd>→</kbd> to step, <kbd>space</kbd> to play.</footer>
+</div>
+
+<script>
+const CASE = "A";
+// Notes a human added after checking the footage (shown when the agent rules a clip out).
+const NOTES = {
+  A4: "In this very wide shot with tiny people, CreativAI got this one wrong: the real boy crosses here alone. The final answer is still right.",
+  A6: "This is the trick clip: a lookalike family, same clothes, boy in red, eating together.",
+};
+const S = 10, O = 20, NS = "http://www.w3.org/2000/svg";
+const $ = id => document.getElementById(id);
+const svg = $("plan");
+const el = (tag, attrs = {}, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+const h = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content; };
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const toSec = t => { const p = t.split(":").map(Number); return p[0] * 3600 + (p[1] || 0) * 60 + (p[2] || 0); };
+const toClock = s => [Math.floor(s / 3600), Math.floor(s / 60) % 60, Math.round(s % 60)].map(n => String(n).padStart(2, "0")).join(":");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+let topo, clips, run, cam = {}, camEls = {}, L = {}, scenes = [], idx = 0, playing = false, timer = null, clockNow = toSec("13:58:00"), clockAnim;
+const clipById = id => clips.find(c => c.id === id);
+const media = id => `media/case-${CASE}/${id}`;
+const name = id => cam[id].name;
+
+// ---------------- map ----------------
+function drawMap() {
+  [["Fashion House",12,2,26,22],["TechZone",40,2,20,22],["ToyLand",62,2,26,22],["Main corridor",2,28,96,10],["Food court",2,40,36,18],["Entrance",42,40,16,18],["Info · Security",62,40,14,14],["Restrooms",80,40,12,18]]
+    .forEach(([n,x,y,w,hh]) => { el("rect",{class:"zone",x:O+x*S,y:O+y*S,width:w*S,height:hh*S,rx:4}); el("text",{class:"zlabel",x:O+x*S+10,y:O+y*S+22}).textContent = n; });
+  el("circle",{class:"zone",cx:O+50*S,cy:O+33*S,r:70});
+  for (const c of topo.cameras) cam[c.id] = { ...c, x: O + c.pos[0] * S, y: O + c.pos[1] * S };
+  for (const e of topo.edges) {
+    const A = cam[e.a], B = cam[e.b];
+    el("line",{class:"edge",x1:A.x,y1:A.y,x2:B.x,y2:B.y});
+    el("text",{class:"dist",x:(A.x+B.x)/2+6,y:(A.y+B.y)/2-6}).textContent = e.dist_m + " m";
+  }
+  L.reach = el("g"); L.legs = el("g"); L.marks = el("g");
+  const withFootage = new Set(clips.map(c => c.camera));
+  for (const c of Object.values(cam)) {
+    camEls[c.id] = el("circle",{class:"cam" + (withFootage.has(c.id) ? " has" : ""),cx:c.x,cy:c.y,r:9});
+    el("text",{class:"camid",x:c.x+13,y:c.y+18}).textContent = c.id;
+  }
+  L.top = el("g"); L.dots = el("g");
+}
+function route(a, b) {
+  const dist = { [a]: 0 }, prev = {}, todo = new Set(Object.keys(cam));
+  while (todo.size) {
+    const u = [...todo].reduce((m, k) => (dist[k] ?? Infinity) < (dist[m] ?? Infinity) ? k : m);
+    todo.delete(u);
+    if (u === b || dist[u] === undefined) break;
+    for (const e of topo.edges) {
+      const v = e.a === u ? e.b : e.b === u ? e.a : null;
+      if (v && todo.has(v) && dist[u] + e.dist_m < (dist[v] ?? Infinity)) { dist[v] = dist[u] + e.dist_m; prev[v] = u; }
+    }
+  }
+  const out = [b]; while (out[0] !== a && prev[out[0]]) out.unshift(prev[out[0]]);
+  return out;
+}
+const ptsOf = ids => ids.map(id => `${cam[id].x},${cam[id].y}`).join(" ");
+
+// A leg of a path, drawn instantly or animated (line grows, then a dot walks along it).
+function leg(cls, from, to, animate) {
+  const ids = route(from, to);
+  const pl = el("polyline", { class: "leg " + cls, points: ptsOf(ids) }, L.legs);
+  if (!animate || reduced) return;
+  const len = pl.getTotalLength();
+  const dash = cls === "kid" ? null : len;
+  if (dash) { pl.style.strokeDasharray = `${len}`; pl.style.strokeDashoffset = `${len}`; pl.getBoundingClientRect(); pl.classList.add("draw"); pl.style.strokeDashoffset = "0"; }
+  const dot = el("circle", { r: 9, fill: cls === "kid" ? "var(--child)" : "var(--family)", stroke: "var(--bg)", "stroke-width": 2 }, L.dots);
+  const t0 = performance.now(), dur = 1600;
+  (function step(now) {
+    if (!pl.isConnected) { dot.remove(); return; } // the map was redrawn (step changed) mid-walk
+    const k = Math.min(1, Math.max(0, (performance.now() - t0) / dur)), p = pl.getPointAtLength(len * (k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2));
+    dot.setAttribute("cx", p.x); dot.setAttribute("cy", p.y);
+    if (k < 1) requestAnimationFrame(step); else { dot.remove(); if (dash) pl.style.strokeDasharray = ""; }
+  })(t0);
+}
+
+// Show what the Map allows: reach lines along walkways, glows on reachable cameras, purple rings on clips to check.
+function showReach(e) {
+  L.reach.replaceChildren();
+  const kid = e.who === "child" ? " kid" : "";
+  const cands = new Set(e.candidates.map(id => clipById(id).camera));
+  e.windows.forEach((w, i) => {
+    const delay = reduced ? 0 : 120 * (w.hops || 0);
+    if (w.via.length > 1) {
+      const pl = el("polyline", { class: "reach" + kid, points: ptsOf(w.via) }, L.reach);
+      if (!reduced) { const len = pl.getTotalLength(); pl.style.strokeDasharray = len; pl.style.strokeDashoffset = len; pl.style.transition = `stroke-dashoffset .8s ease ${delay}ms`; requestAnimationFrame(() => requestAnimationFrame(() => (pl.style.strokeDashoffset = 0))); }
+    }
+    const c = cam[w.camera];
+    const g = el("circle", { class: "glow" + kid, cx: c.x, cy: c.y, r: 22 }, L.reach);
+    if (!reduced) { g.style.opacity = 0; g.style.transition = `opacity .4s ease ${delay + 500}ms`; requestAnimationFrame(() => requestAnimationFrame(() => (g.style.opacity = ""))); }
+  });
+  for (const camId of cands) {
+    const c = cam[camId];
+    el("circle", { class: "cand", cx: c.x, cy: c.y, r: 16 }, L.reach);
+    const w = e.windows.find(x => x.camera === camId);
+    if (w) el("text", { class: "wlabel", x: c.x + 20, y: c.y - 14 }, L.reach).textContent = `${w.from.slice(0, 5)}–${w.to.slice(0, 5)}`;
+  }
+  if (e.from) { const c = cam[e.from.camera]; el("circle", { class: "pulse", cx: c.x, cy: c.y, r: 14, style: `stroke:var(--${e.who === "child" ? "child" : "family"})` }, L.reach); }
+}
+
+// ---------------- scenes ----------------
+const CH = { intro: "report", entry: "entry", family: "family", child: "child" };
+function buildScenes() {
+  const out = [{ kind: "intro", ch: "report" }];
+  for (const e of run.trace) {
+    if (e.type === "report") continue;
+    if (e.type === "map" && !e.candidates.length) { out.push({ kind: "map-none", e, ch: e.phase }); continue; }
+    if (e.type === "decision") { out.push({ kind: "d-" + e.kind, e, ch: e.kind === "separation" ? "sep" : CH[e.phase] }); continue; }
+    if (e.type === "alert") { out.push({ kind: "alert", e, ch: "alert" }); continue; }
+    out.push({ kind: e.type, e, ch: CH[e.phase] });
+  }
+  return out;
+}
+const DUR = { intro: 9000, map: 7000, "map-none": 5000, ask: 5000, answers: 9000, "d-found": 6000, "d-next": 6500, "d-separation": 9000, "d-reject": 5500, "d-child_alone": 7000, "d-stop": 4000, alert: 12000 };
+
+// Permanent effects of each scene on the map (paths, markers, clock), so any step can be rebuilt.
+function effect(st, sc) {
+  const e = sc.e;
+  switch (sc.kind) {
+    case "d-found": st.fam = e.camera; st.famCams.add(e.camera); st.clock = toSec(e.time); break;
+    case "d-next": st.famLegs.push([st.fam, e.camera]); st.fam = e.camera; st.famCams.add(e.camera); st.clock = toSec(e.time); break;
+    case "d-separation": st.famLegs.push([st.fam, e.camera]); st.fam = e.camera; st.famCams.add(e.camera); st.sep = e.camera; st.kid = e.camera; st.clock = toSec(e.time); break;
+    case "d-child_alone": st.kidLegs.push([st.kid, e.camera]); st.kid = e.camera; st.kidCams.add(e.camera); st.clock = toSec(e.time); break;
+    case "d-reject": st.rej.add(e.camera); break;
+    case "alert": st.now = e.child_now.camera; st.clock = toSec(e.child_now.last_seen); break;
+  }
+}
+function stateBefore(i) {
+  const st = { famLegs: [], kidLegs: [], famCams: new Set(), kidCams: new Set(), rej: new Set(), clock: toSec("13:58:00") };
+  for (let k = 0; k < i; k++) effect(st, scenes[k]);
+  return st;
+}
+function drawState(st) {
+  L.legs.replaceChildren(); L.marks.replaceChildren(); L.dots.replaceChildren(); L.top.replaceChildren();
+  st.famLegs.forEach(([a, b]) => leg("fam", a, b, false));
+  st.kidLegs.forEach(([a, b]) => leg("kid", a, b, false));
+  for (const [id, e] of Object.entries(camEls)) {
+    e.classList.toggle("fam", st.famCams.has(id)); e.classList.toggle("kid", st.kidCams.has(id)); e.classList.toggle("rej", st.rej.has(id));
+  }
+  for (const id of st.rej) { const c = cam[id]; el("path", { class: "xmark", d: `M${c.x - 7},${c.y - 7}L${c.x + 7},${c.y + 7}M${c.x + 7},${c.y - 7}L${c.x - 7},${c.y + 7}` }, L.top); }
+  if (st.sep) { const c = cam[st.sep]; el("circle", { class: "sepring", cx: c.x, cy: c.y, r: 18 }, L.marks); const t = el("text", { class: "pin", x: c.x + 24, y: c.y - 24, fill: "var(--alert)" }, L.marks); t.textContent = "Separated"; }
+  if (st.fam && !st.sep) { const c = cam[st.fam]; el("circle", { cx: c.x, cy: c.y, r: 10, fill: "var(--family)", stroke: "var(--bg)", "stroke-width": 2 }, L.dots); }
+  if (st.kid && st.kidLegs.length) { const c = cam[st.kid]; el("circle", { cx: c.x, cy: c.y, r: 9, fill: "var(--child)", stroke: "var(--bg)", "stroke-width": 2 }, L.dots); }
+  if (st.now) { const c = cam[st.now]; el("circle", { class: "pulse", cx: c.x, cy: c.y, r: 16 }, L.marks); const t = el("text", { class: "pin", x: c.x - 30, y: c.y + 48, fill: "var(--child)" }, L.marks); t.textContent = "Child is here"; }
+}
+function setClock(target, animate) {
+  cancelAnimationFrame(clockAnim);
+  const from = clockNow, t0 = performance.now(), dur = animate && !reduced ? 1200 : 0;
+  (function tick(now) {
+    const k = dur ? Math.min(1, Math.max(0, (performance.now() - t0) / dur)) : 1;
+    clockNow = from + (target - from) * k;
+    $("clock").textContent = toClock(clockNow);
+    if (k < 1) clockAnim = requestAnimationFrame(tick);
+  })(t0);
+}
+
+// ---------------- the "now" panel ----------------
+const childWord = { with_family: "with the family", alone: "alone", with_others: "with other adults", absent: "not seen" };
+function clipCard(id, opts = {}) {
+  const c = clipById(id);
+  return `<div class="clip ${opts.cls || ""}" data-clip="${id}">
+    <video muted playsinline loop preload="none" poster="${media(id)}.jpg" src="${media(id)}.mp4"></video>
+    <div class="cap"><b>${id} · ${c.camera}</b><span class="muted">${esc(name(c.camera))} · ${c.start}</span>${opts.extra || ""}</div></div>`;
+}
+function verdicts(r) {
+  return `<div class="verdict"><span class="v ${r.family ? "y" : ""}">family: ${r.family ? "yes" : "no"}</span><span class="v ${r.child === "alone" ? "a" : r.child === "with_family" ? "y" : ""}">child: ${childWord[r.child]}</span>${r.leaves !== null ? `<span class="v r">leaves at ${r.leaves} s</span>` : ""}</div>`;
+}
+function typeOut(node, text, ms = 18) {
+  if (reduced) { node.textContent = text; return; }
+  let i = 0; node.textContent = "";
+  const t = setInterval(() => { node.textContent = text.slice(0, ++i); if (i >= text.length) clearInterval(t); }, ms);
+}
+const shortQ = ["Are these adults in the clip? (yes / no)", "Is the child with them, alone, with other adults, or not there?", "At what second does the child walk away? (number / none)"];
+const walkText = w => w && w.dist_m ? `${w.dist_m} m on foot (${w.via.map(v => v).join(" → ")})` : "";
+
+function render(sc) {
+  const e = sc.e || {};
+  const now = $("now");
+  let html = "";
+  switch (sc.kind) {
+    case "intro": html = `
+      <span class="who agent">The report</span>
+      <h3>A boy is missing. His parents are at the security desk.</h3>
+      <p>The guard types what the parents say. That is all the agent gets: no photo, no names, just descriptions and a rough time.</p>
+      <dl class="report">
+        <div><dt>Child</dt><dd id="r-child" class="mono" style="margin:0"></dd></div>
+        <div><dt>Came with</dt><dd id="r-fam" class="mono" style="margin:0"></dd></div>
+        <div><dt>Arrived</dt><dd class="mono" style="margin:0">around ${esc(run.report.arrived)}</dd></div>
+      </dl>
+      <p class="muted">Footage available: ${clips.length} clips of 15 s from ${new Set(clips.map(c => c.camera)).size} of the mall's 12 cameras. Press play.</p>`; break;
+    case "map": {
+      const cands = e.candidates.map(id => clipById(id));
+      const reach = e.windows.filter(w => w.camera !== e.from?.camera);
+      html = e.phase === "entry" ? `
+        <span class="who map">The Map</span>
+        <h3>Start at the doors.</h3>
+        <p>The family arrived around ${esc(run.report.arrived)}, so they must have passed an entrance camera then. The Map checks both entrances, ${e.windows.map(w => w.camera).join(" and ")}, from ${e.windows[0].from.slice(0, 5)} to ${e.windows[0].to.slice(0, 5)}.</p>
+        <div><span class="k">Footage in that window</span><div class="chips" style="margin-top:6px">${cands.map((c, i) => `<span class="chip has" style="animation-delay:${i * 120}ms">${c.id} · ${c.camera} · ${c.start}</span>`).join("")}</div></div>`
+      : `
+        <span class="who map">The Map</span>
+        <h3>From ${esc(name(e.from.camera))} at ${e.from.time.slice(0, 5)}, where could ${e.who === "child" ? "a lost child" : "the family"} go?</h3>
+        <p>${e.who === "child"
+          ? `A child walks 0.4–1.6 m/s and may wander. The Map looks up to 4 cameras away and allows a few extra minutes.`
+          : `Adults walk 0.6–1.8 m/s, and may spend up to 15 minutes in a shop. The Map looks up to 3 cameras away, because some cameras have no footage at that moment (blind spots).`}
+        It finds <b>${reach.length} reachable cameras</b>, each with its own time window. Only <b>${cands.length}</b> of them ${cands.length === 1 ? "has" : "have"} footage inside its window, so only ${cands.length === 1 ? "that clip goes" : "those clips go"} to CreativAI.</p>
+        <div><span class="k">Reachable cameras and when</span><div class="chips" style="margin-top:6px">${reach.map((w, i) => `<span class="chip ${cands.some(c => c.camera === w.camera) ? "has" : "dim"}" style="animation-delay:${i * 70}ms">${w.camera} ${w.from.slice(0, 5)}–${w.to.slice(0, 5)}</span>`).join("")}</div></div>
+        <div><span class="k">Sent to CreativAI</span><div class="chips" style="margin-top:6px">${cands.map((c, i) => `<span class="chip has" style="border-color:var(--eyes);animation-delay:${400 + i * 120}ms">${c.id} · ${c.camera} · ${c.start}</span>`).join("")}</div></div>`;
+      break;
+    }
+    case "map-none": html = `
+      <span class="who map">The Map</span>
+      <h3>From ${esc(name(e.from.camera))}, there is no more footage to check.</h3>
+      <p>No camera the child could have reached after ${e.from.time.slice(0, 5)} has footage in its window. So ${esc(name(e.from.camera))} is the last place the child was seen, and the search stops.</p>`; break;
+    case "ask": html = `
+      <span class="who eyes">The Eyes · CreativAI</span>
+      <h3>CreativAI watches ${e.clips.length === 1 ? "one clip" : e.clips.length + " clips"} <span class="thinking" aria-label="working"><i></i><i></i><i></i></span></h3>
+      <p>The agent puts ${e.clips.length === 1 ? "this clip" : "these clips"} on a CreativAI data plate and asks the same three questions about each, with the guard's descriptions filled in:</p>
+      <ol class="qs">${shortQ.map(q => `<li>${q}</li>`).join("")}</ol>
+      <details><summary>Exact questions sent</summary><pre>${esc(Object.values(run.trace[0].questions).join("\n\n"))}</pre></details>
+      <div class="clips">${e.clips.map(id => clipCard(id, { cls: "watching" })).join("")}</div>`; break;
+    case "answers": html = `
+      <span class="who eyes">The Eyes · CreativAI</span>
+      <h3>CreativAI's answers</h3>
+      <p class="muted">Word for word, then read by the agent as simple flags.</p>
+      <div class="clips">${e.results.map(r => clipCard(r.id, { extra: `<div class="ans"><span><span class="k">Family?</span> <q data-t="${esc(r.why.family)}"></q></span><span><span class="k">Child?</span> <q data-t="${esc(r.why.child)}"></q></span><span><span class="k">Walks away?</span> <q data-t="${esc(r.why.leaves)}"></q></span></div>${verdicts(r)}` })).join("")}</div>`; break;
+    case "d-found": html = `
+      <span class="who agent">The agent</span>
+      <h3>Family found at the ${esc(name(e.camera).toLowerCase())}, ${e.time.slice(0, 5)}.</h3>
+      <p>CreativAI saw the two adults in clip ${e.clip}, with the boy <b>${childWord[e.child]}</b>. This is the first point of the family's path. From here, the agent follows them forward in time.</p>
+      <div class="big"><video muted playsinline autoplay loop poster="${media(e.clip)}.jpg" src="${media(e.clip)}.mp4"></video></div>`; break;
+    case "d-next": html = `
+      <span class="who agent">The agent</span>
+      <h3>Next sighting: ${esc(name(e.camera))}, ${e.time.slice(0, 5)}.</h3>
+      <p>The family is in clip ${e.clip}, and the boy is still <b>${childWord[e.child]}</b>. It's ${walkText(e.walk)} from the last sighting, an easy walk in that time, so the sighting is physically possible.</p>
+      <div class="big"><video muted playsinline autoplay loop poster="${media(e.clip)}.jpg" src="${media(e.clip)}.mp4"></video></div>`; break;
+    case "d-separation": html = `
+      <span class="who alert">Separation</span>
+      <h3>At ${esc(name(e.camera))}, ${e.offset} seconds into clip ${e.clip}, the boy walks away.</h3>
+      <p>The agent reads the family's footage in time order. ${e.clip} is the earliest clip where CreativAI says the child walks away from the adults, so this is where he was lost: <b style="color:var(--alert)">${esc(name(e.camera))}, ${e.time}</b>. The parents are busy and don't notice.</p>
+      <div class="big"><video id="sepvid" muted playsinline controls poster="${media(e.clip)}.jpg" src="${media(e.clip)}.mp4"></video></div>
+      <p class="muted">The video starts just before the moment CreativAI pointed to.</p>`; break;
+    case "d-reject": html = `
+      <span class="who agent">The agent</span>
+      <h3>${e.clip} at ${esc(name(e.camera))}: ruled out.</h3>
+      <p>CreativAI saw ${esc(e.text)}. A lost child is alone, so this sighting doesn't extend the boy's path.${NOTES[e.clip] ? " " + NOTES[e.clip] : ""}</p>
+      <div class="big"><video muted playsinline autoplay loop poster="${media(e.clip)}.jpg" src="${media(e.clip)}.mp4"></video></div>`; break;
+    case "d-child_alone": html = `
+      <span class="who agent">The agent</span>
+      <h3>The boy, alone: ${esc(name(e.camera))}, ${e.time.slice(0, 5)}.</h3>
+      <p>Clip ${e.clip} shows the boy with no adult. It's ${walkText(e.walk)} from where he was lost, at about ${e.walk.speed} m/s: a slow, wandering child's pace. It fits.</p>
+      <div class="big"><video muted playsinline autoplay loop poster="${media(e.clip)}.jpg" src="${media(e.clip)}.mp4"></video></div>`; break;
+    case "d-stop": html = `<span class="who agent">The agent</span><h3>${esc(e.text)}</h3>`; break;
+    case "alert": {
+      const asked = new Set(run.trace.filter(x => x.type === "ask").flatMap(x => x.clips));
+      const rounds = run.trace.filter(x => x.type === "ask").length;
+      html = `
+      <span class="who alert">Alert sent to the nearest guard</span>
+      <h3>Go to the ${esc(e.child_now.name.toLowerCase())}. The boy is there, alone.</h3>
+      <div class="alertbox">${esc(e.text.replace(/^LOST CHILD:\s*/, ""))}</div>
+      <div class="stat">
+        <div><b>${e.separation.time.slice(0, 5)}</b><span class="muted">lost at ${e.separation.camera}</span></div>
+        <div><b>${e.child_now.camera}</b><span class="muted">child now</span></div>
+        <div><b>${rounds}</b><span class="muted">CreativAI rounds</span></div>
+        <div><b>${asked.size}</b><span class="muted">clips sent to CreativAI</span></div>
+      </div>
+      <p class="muted">From a few lines of description to a location in ${rounds} rounds of questions. Press <b>↺ Replay</b> to watch it again, or click any step on the bar.</p>`;
+      break;
+    }
+  }
+  now.replaceChildren(h(html));
+  // Bring the panel to life: typing, video, cues.
+  if (sc.kind === "intro") { typeOut($("r-child"), run.report.child, 22); setTimeout(() => typeOut($("r-fam"), run.report.family, 12), reduced ? 0 : 1800); }
+  now.querySelectorAll("q[data-t]").forEach((q, i) => setTimeout(() => typeOut(q, q.dataset.t, 14), reduced ? 0 : 300 + i * 450));
+  now.querySelectorAll(".clip video").forEach(v => { v.preload = "auto"; v.play().catch(() => {}); });
+  if (sc.kind === "answers") {
+    // Mark the clips the agent acts on in the decisions that follow this answer round.
+    const marks = {};
+    for (let k = idx + 1; k < scenes.length && scenes[k].kind.startsWith("d-"); k++) {
+      const d = scenes[k].e;
+      marks[d.clip] = d.kind === "separation" ? "sep" : d.kind === "reject" ? "rej" : "pick";
+    }
+    setTimeout(() => now.querySelectorAll(".clip").forEach(c => marks[c.dataset.clip] && c.classList.add(marks[c.dataset.clip])), reduced ? 0 : 2500);
+  }
+  const sv = $("sepvid");
+  if (sv) sv.addEventListener("loadedmetadata", () => { sv.currentTime = Math.max(0, e.offset - 2); sv.play().catch(() => {}); }, { once: true });
+}
+
+// ---------------- the map side of each scene ----------------
+function ringClips(e) {
+  L.reach.replaceChildren();
+  (e.clips || e.results.map(r => r.id)).map(id => clipById(id).camera)
+    .forEach(c => { const p = cam[c]; el("circle", { class: "cand", cx: p.x, cy: p.y, r: 16 }, L.reach); });
+}
+function animateMap(sc) {
+  const e = sc.e || {};
+  if (sc.kind === "map") showReach(e);
+  else if (sc.kind !== "ask" && sc.kind !== "answers") L.reach.replaceChildren();
+  if (sc.kind === "ask" || sc.kind === "answers") ringClips(e);
+  const st = stateBefore(idx);
+  switch (sc.kind) {
+    case "d-next": case "d-separation": leg("fam", st.fam, e.camera, true); break;
+    case "d-child_alone": leg("kid", st.kid, e.camera, true); break;
+  }
+  if (sc.kind === "d-separation") { const c = cam[e.camera]; setTimeout(() => el("circle", { class: "burst", cx: c.x, cy: c.y, r: 18 }, L.marks), reduced ? 0 : 1500); }
+  const after = stateBefore(idx + 1);
+  setClock(after.clock, true);
+  // Settle into the final drawn state once the animation is over.
+  setTimeout(() => { if (scenes[idx] === sc) { const keep = [...L.marks.querySelectorAll(".burst")]; drawState(after); keep.forEach(k => L.marks.appendChild(k)); } }, reduced ? 0 : 1800);
+}
+
+function go(i, { animate = true } = {}) {
+  idx = Math.max(0, Math.min(scenes.length - 1, i));
+  const sc = scenes[idx];
+  drawState(stateBefore(idx));
+  clockNow = stateBefore(idx).clock; $("clock").textContent = toClock(clockNow);
+  render(sc);
+  if (animate) animateMap(sc); else { drawState(stateBefore(idx + 1)); setClock(stateBefore(idx + 1).clock, false); if (sc.kind === "map") showReach(sc.e); else if (sc.kind === "ask" || sc.kind === "answers") ringClips(sc.e); }
+  // chapters + track
+  const order = ["report", "entry", "family", "sep", "child", "alert"], at = order.indexOf(sc.ch);
+  $("chapters").querySelectorAll("li").forEach(li => { const k = order.indexOf(li.dataset.ch); li.className = k < at ? "done" : k === at ? "on" : ""; });
+  $("track").querySelectorAll("button").forEach((b, k) => (b.className = k < idx ? "done" : k === idx ? "on" : ""));
+  $("count").textContent = `step ${idx + 1} / ${scenes.length}`;
+  schedule();
+}
+function schedule() {
+  clearTimeout(timer);
+  if (!playing) return;
+  if (idx >= scenes.length - 1) { setPlaying(false); return; }
+  timer = setTimeout(() => go(idx + 1), DUR[scenes[idx].kind] || 6000);
+}
+function setPlaying(p) {
+  playing = p;
+  $("play").textContent = p ? "❚❚ Pause" : idx >= scenes.length - 1 ? "↺ Replay" : "▶ Play";
+  schedule();
+}
+
+$("play").addEventListener("click", () => { if (!playing && idx >= scenes.length - 1) { go(0); } setPlaying(!playing); });
+$("next").addEventListener("click", () => { setPlaying(false); go(idx + 1); });
+$("prev").addEventListener("click", () => { setPlaying(false); go(idx - 1); });
+document.addEventListener("keydown", ev => {
+  if (ev.target.closest("input, textarea, summary")) return;
+  if (ev.key === "ArrowRight") { setPlaying(false); go(idx + 1); }
+  else if (ev.key === "ArrowLeft") { setPlaying(false); go(idx - 1); }
+  else if (ev.key === " ") { ev.preventDefault(); $("play").click(); }
+});
+
+(async () => {
+  try {
+    [topo, clips, run] = await Promise.all([
+      fetch("mall_topology.json").then(r => r.json()),
+      fetch(`pipeline/clips-case-${CASE}.json`).then(r => r.json()).then(m => m.clips),
+      fetch(`results/case-${CASE}-run.json`).then(r => r.json()),
+    ]);
+  } catch (err) {
+    $("now").innerHTML = `<h3>Couldn't load the replay data.</h3><p class="muted">Open this page through a web server (GitHub Pages, or <code>npm start</code> then <a href="/replay.html">/replay.html</a>), not as a local file. (${esc(err.message)})</p>`;
+    return;
+  }
+  drawMap();
+  scenes = buildScenes();
+  $("track").replaceChildren(...scenes.map((s, k) => { const b = document.createElement("button"); b.type = "button"; b.title = `Step ${k + 1}`; b.setAttribute("aria-label", `Go to step ${k + 1}`); b.addEventListener("click", () => { setPlaying(false); go(k); }); return b; }));
+  const step = Number(new URLSearchParams(location.search).get("step"));
+  go(step ? step - 1 : 0, { animate: !step });
+  if (new URLSearchParams(location.search).get("play") === "1") setPlaying(true);
+  window.addEventListener("error", ev => console.error("replay error:", ev.message));
+})();
+</script>
+</body>
+</html>
