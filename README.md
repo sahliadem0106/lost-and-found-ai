@@ -6,7 +6,7 @@
 
 [![The replay at the Map step: reachable cameras light up with their time windows, and the clips sent to CreativAI are ringed in purple](docs/replay.png)](https://sahliadem0106.github.io/newnew/)
 
-The replay walks through a real run in 24 animated steps. You see the guard's report typed in, the Map lighting up the cameras a person could reach and when, CreativAI watching each clip and its answers word for word, the path drawing itself across the mall, the separation moment in the video, the lookalike family being ruled out, and the final alert. It runs in the browser with nothing to install. To run it locally, use `npm start` and open http://localhost:3000/replay.html.
+The replay walks through a real run in 24 animated steps, laid out like an investigation board: the mall map on the left, an **investigation log** on the right that grows with every step (click any line to jump back), a chapter timeline, and a **footage strip** showing every clip and what happened to it (not checked, with CreativAI, family seen, separation, child alone, ruled out). You see the guard's report typed in, the Map lighting up the cameras a person could reach and when, CreativAI watching each clip and its answers word for word, the path drawing itself across the mall, the separation moment in the video, the lookalike family being ruled out, and the final alert. It runs in the browser with nothing to install. To run it locally, use `npm start` and open http://localhost:3000/replay.html.
 
 It combines two things:
 
