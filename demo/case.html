@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Security control-room console, same look as camera-network.html. Map left, report + agent log right, evidence below. */
+/* Security control-room console, same look as replay.html. Map left, report + agent log right, evidence below. */
 :root {
   color-scheme: dark;
   --bg: #0d171b; --panel: #13222a; --line: #27404a; --fg: #d8e5e8; --muted: #8ba3aa;
@@ -73,14 +73,14 @@ video { width: 100%; border-radius: 4px; background: #000; aspect-ratio: 16 / 9;
 <body>
 <div class="wrap">
   <header>
-    <h1>Lost &amp; Found · Case console</h1>
+    <h1>Lost &amp; Found Â· Case console</h1>
     <p class="sub">A guard describes the missing child and the family. The agent follows the family camera by camera, using walking times on the camera map to decide where to look, and asks CreativAI about only that footage. It finds where the child was separated and where the child is now.</p>
   </header>
 
   <div class="main">
     <div style="display:grid;gap:20px;min-width:0">
     <section class="panel" aria-label="Mall map">
-      <h2>Al-Noor Mall · ground floor</h2>
+      <h2>Al-Noor Mall Â· ground floor</h2>
       <svg id="plan" viewBox="0 0 1040 640" role="img" aria-label="Floor plan with cameras, walkways and the agent's findings"></svg>
       <div class="legend">
         <span><i class="sw" style="background:var(--family)"></i>Family's path</span>
@@ -146,7 +146,7 @@ for (const k in SAMPLE) form.elements[k].value = SAMPLE[k];
 
 // ---------- the map ----------
 function drawMap() {
-  [["Fashion House",12,2,26,22],["TechZone",40,2,20,22],["ToyLand",62,2,26,22],["Main corridor",2,28,96,10],["Food court",2,40,36,18],["Entrance",42,40,16,18],["Info · Security",62,40,14,14],["Restrooms",80,40,12,18]]
+  [["Fashion House",12,2,26,22],["TechZone",40,2,20,22],["ToyLand",62,2,26,22],["Main corridor",2,28,96,10],["Food court",2,40,36,18],["Entrance",42,40,16,18],["Info Â· Security",62,40,14,14],["Restrooms",80,40,12,18]]
     .forEach(([n,x,y,w,h]) => { el("rect",{class:"zone",x:O+x*S,y:O+y*S,width:w*S,height:h*S,rx:4}); el("text",{class:"zlabel",x:O+x*S+10,y:O+y*S+22}).textContent = n; });
   el("circle",{class:"zone",cx:O+50*S,cy:O+33*S,r:70});
   for (const c of topo.cameras) cam[c.id] = { ...c, x: O + c.pos[0] * S, y: O + c.pos[1] * S };
@@ -227,9 +227,9 @@ function showResult(res) {
   if (res.separation) {
     const clip = clips.find(c => c.id === res.separation.clip);
     const off = (t => { const [h, m, s] = t.split(":").map(Number); return h * 3600 + m * 60 + s; });
-    videoCard($("sep"), name(res.separation.camera), `${res.separation.time} · clip ${clip.id} · ${off(res.separation.time) - off(clip.start)} s in`, clip.id, off(res.separation.time) - off(clip.start));
+    videoCard($("sep"), name(res.separation.camera), `${res.separation.time} Â· clip ${clip.id} Â· ${off(res.separation.time) - off(clip.start)} s in`, clip.id, off(res.separation.time) - off(clip.start));
   }
-  if (res.child_now) videoCard($("now"), name(res.child_now.camera), `last seen alone ${res.child_now.last_seen} · clip ${res.child_now.clip}`, res.child_now.clip, 0);
+  if (res.child_now) videoCard($("now"), name(res.child_now.camera), `last seen alone ${res.child_now.last_seen} Â· clip ${res.child_now.clip}`, res.child_now.clip, 0);
   const li = (cls, time, camId, text) => { const e = document.createElement("li"); e.className = cls; e.innerHTML = "<span></span><span></span><span></span>"; [time, camId, text].forEach((t, i) => (e.children[i].textContent = t)); return e; };
   const steps = [];
   for (const f of (res.family_path || []).filter(f => f.id !== res.separation?.clip)) steps.push([f.time, li("fam", f.time, f.camera, `${f.id}: family seen, child ${f.child.replace("_", " ")}`)]);

@@ -102,10 +102,14 @@ Case A is a family of three arriving at 14:02. The boy (6, red t-shirt) leaves h
 
 **Every answer is correct.** A full first run takes about 3 minutes and about 27 CreativAI credits (6 clips, 4 rounds of questions). After two clips were remade (see below), only those two were asked about again: 2.5 minutes and 10.8 credits. **Every rerun:** under 1 second and 0 credits, thanks to the cache.
 
+### Verify the answers yourself
+
+Every answer the replay shows comes from CreativAI and is stored in CreativAI's data plates for this collection. `demo/results/creativai-evidence-case-a.json` lists each plate's ID and creation time with the answers it holds, fetched directly from CreativAI's API: all 18 answers for the current clips are identical to the replay. Anyone with access to the collection can re-run `node demo/pipeline/export-evidence.js demo/pipeline/clips-case-A.json`.
+
 ### Honest limits
 
 - **The footage is AI-generated** (Kling via the Higgsfield API), not real CCTV. The clips don't always follow their script either: in A3 the boy leaves at about 4 s, not at the planned 9–13 s, and CreativAI correctly reported 4 s.
-- **Two clips had to be remade.** The first A4 had a second, generated boy in a matching red outfit in a tiny-figure dome shot; CreativAI matched him to nearby adults and the agent wrongly ruled the atrium out. The first A5 had a person sprawled on a counter. Both were regenerated with stricter prompts and camera placements that match the map (`demo/prompts/07-remakes.md`) and swapped in with `replace-clip.js`. With the new clips, every answer is correct. The old versions are kept locally as `_v1`.
+- **Two clips had to be remade.** The first A4 had a second, generated boy in a matching red outfit in a tiny-figure dome shot; CreativAI matched him to nearby adults and the agent wrongly ruled the atrium out. The first A5 had a person sprawled on a counter. Both were regenerated with stricter prompts and camera placements that match the map, and swapped in with `replace-clip.js`. With the new clips, every answer is correct.
 - **The time-order rule was added after seeing case A's answers.** A blind test on case B (clips generated but never run) was planned to check that the system generalises, and was **not run**. So these results show the method working on one case, not proof that it works in general.
 - **Search alone isn't enough.** CreativAI splits video into 16 s chunks, so a 15 s clip is one search hit with no timing, and similarity scores barely differ between similar mall scenes. That's why the Eyes use data-plate questions, not search ranking.
 
@@ -170,14 +174,9 @@ To **replace a clip** (for example after regenerating it), put the new file in p
 
 Optional: try raw search with `node demo/pipeline/search.js demo/pipeline/state-<collection>.json "a boy in a red t-shirt" camera:fc-02`.
 
-### 4. (Optional) Generate demo footage
+### 4. About the demo footage
 
-This repo's clips were generated through the **Higgsfield API**. All prompts are in `demo/prompts/`:
-
-1. **Character sheets** (front, side and back of each person on one image) with **Qwen Image 3**, about $0.04 each. These are in `demo/assets/characters/`.
-2. **Clips** with **Kling O3 image-reference**, standard mode, sound off: the clip prompt plus the character sheets, so every clip shows the same people. About **$1.07 per 15 s clip**. The two trick clips with strangers used plain **Kling 3.0 text-to-video** at about $0.63.
-
-Total for 7 character sheets and 14 clips: **about $15**.
+The clips were generated through the **Higgsfield API**: one reference sheet per character with **Qwen Image 3** (about $0.04 each), then 15-second CCTV-style clips with **Kling O3 image-reference** (about $1.07 each), which keeps the same people in every camera. The two trick clips with strangers used plain **Kling 3.0** (about $0.63). Total: about $17.
 
 ---
 
@@ -194,12 +193,10 @@ Total for 7 character sheets and 14 clips: **about $15**.
 | `demo/replay.html`, `index.html` | The animated step-by-step replay (`index.html` sends GitHub Pages visitors to it) |
 | `demo/server.js`, `demo/case.html` | The case console |
 | `demo/media/case-A/` | Web copies of clips A1–A6 with poster images |
-| `demo/results/case-A-run.json` | The agent's result for case A |
+| `demo/results/case-A-run.json` | The agent's result for case A, with the full trace of every step |
+| `demo/results/creativai-evidence-case-a.json` | Proof: every CreativAI data plate the agent created, fetched from CreativAI (IDs, timestamps, stored answers) |
+| `demo/pipeline/export-evidence.js` | Re-exports that proof from CreativAI |
 | `demo/mall_topology.json` | Cameras, walkways, walking speeds, true story timelines |
-| `demo/camera-network.html` | Interactive camera map with the planned story (design-stage page) |
-| `demo/prompts/`, `demo/assets/characters/` | Generation prompts and character sheets |
-| `PROJECT.md` | Full project plan and session-by-session notes |
-| `concepts/`, `IDEAS.md` | The brainstorm that led here |
 
 ## Built with
 

@@ -1,0 +1,162 @@
+{
+  "collection_id": "lostfoundcasea_d47c1295",
+  "exported_at": "2026-10-11T23:11:47.816Z",
+  "note": "Fetched directly from CreativAI's API. 'in_replay' is true when the stored answer is identical to the one the replay shows.",
+  "plates": [
+    {
+      "plate_id": "e24e1913-19eb-4fb9-8162-6e572d9da846",
+      "name": "lost-found A1 1791730852676",
+      "created_at": "2026-10-11T15:00:54.383000",
+      "segments": [
+        {
+          "file": "A1_6c270656",
+          "clip": "A1",
+          "answers": [
+            {
+              "question": "Are these adults visible in this video: a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf? Start your answer with \"yes\" or \"no\", then give one short reason",
+              "answer": "Yes, these adults are clearly visible walking together through the mall lobby.",
+              "in_replay": true
+            },
+            {
+              "question": "Look for this child: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers_ Start your answer with exactly one of: \"with these adults\" (the child is together with a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf), \"alone\" (the child has no adult with them at the end of the video), \"with other adults\", or \"not present\"_ Then give one short reason",
+              "answer": "with these adults",
+              "in_replay": true
+            },
+            {
+              "question": "If the child (a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers) walks away from the adults they came with in this video, at what second does it happen? Answer with the number of seconds only, or \"none\"",
+              "answer": "none",
+              "in_replay": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "plate_id": "a6023cdf-7046-42c2-90c3-cf32ab43847d",
+      "name": "lost-found A2 1791731011388",
+      "created_at": "2026-10-11T15:03:32.896000",
+      "segments": [
+        {
+          "file": "A2_5b97f790",
+          "clip": "A2",
+          "answers": [
+            {
+              "question": "Are these adults visible in this video: a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf? Start your answer with \"yes\" or \"no\", then give one short reason",
+              "answer": "yes, both adults matching the descriptions are clearly visible in the clothing store.",
+              "in_replay": true
+            },
+            {
+              "question": "Look for this child: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers_ Start your answer with exactly one of: \"with these adults\" (the child is together with a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf), \"alone\" (the child has no adult with them at the end of the video), \"with other adults\", or \"not present\"_ Then give one short reason",
+              "answer": "with these adults",
+              "in_replay": true
+            },
+            {
+              "question": "If the child (a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers) walks away from the adults they came with in this video, at what second does it happen? Answer with the number of seconds only, or \"none\"",
+              "answer": "none",
+              "in_replay": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "plate_id": "c1cec6e2-fd87-4173-94bb-18b5d2c0da95",
+      "name": "lost-found A3+A4+A5+A6 1791731130605",
+      "created_at": "2026-10-11T15:05:31.698000",
+      "segments": [
+        {
+          "file": "A3_77c5de0a",
+          "clip": "A3",
+          "answers": [
+            {
+              "question": "Are these adults visible in this video: a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf? Start your answer with \"yes\" or \"no\", then give one short reason",
+              "answer": "no. The man in the video is not carrying a shopping bag.",
+              "in_replay": true
+            },
+            {
+              "question": "Look for this child: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers_ Start your answer with exactly one of: \"with these adults\" (the child is together with a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf), \"alone\" (the child has no adult with them at the end of the video), \"with other adults\", or \"not present\"_ Then give one short reason",
+              "answer": "alone. The child is at the store exit by himself while the adults are still at the display table.",
+              "in_replay": true
+            },
+            {
+              "question": "If the child (a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers) walks away from the adults they came with in this video, at what second does it happen? Answer with the number of seconds only, or \"none\"",
+              "answer": "4",
+              "in_replay": true
+            }
+          ]
+        },
+        {
+          "file": "A6_78357258",
+          "clip": "A6",
+          "answers": [
+            {
+              "question": "Are these adults visible in this video: a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf? Start your answer with \"yes\" or \"no\", then give one short reason",
+              "answer": "no. While a couple in similar clothing is shown, the man is not carrying a dark green shopping bag.",
+              "in_replay": true
+            },
+            {
+              "question": "Look for this child: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers_ Start your answer with exactly one of: \"with these adults\" (the child is together with a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf), \"alone\" (the child has no adult with them at the end of the video), \"with other adults\", or \"not present\"_ Then give one short reason",
+              "answer": "with other adults. The boy is seen with a man and woman at a table who match the clothing descriptions but do not have the specified dark green bag.",
+              "in_replay": true
+            },
+            {
+              "question": "If the child (a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers) walks away from the adults they came with in this video, at what second does it happen? Answer with the number of seconds only, or \"none\"",
+              "answer": "10",
+              "in_replay": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "plate_id": "40f4858c-d028-493d-80ef-6db03a776747",
+      "name": "lost-found A4+A5 1791743300089",
+      "created_at": "2026-10-11T18:28:21.820000",
+      "segments": [
+        {
+          "file": "A4_3a437582",
+          "clip": "A4",
+          "answers": [
+            {
+              "question": "Are these adults visible in this video: a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf? Start your answer with \"yes\" or \"no\", then give one short reason",
+              "answer": "no, the specified adults with those unique clothing items and accessories are not visible in the video.",
+              "in_replay": true
+            },
+            {
+              "question": "Look for this child: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers_ Start your answer with exactly one of: \"with these adults\" (the child is together with a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf), \"alone\" (the child has no adult with them at the end of the video), \"with other adults\", or \"not present\"_ Then give one short reason",
+              "answer": "alone, the child is shown walking independently without any adults throughout the entire clip.",
+              "in_replay": true
+            },
+            {
+              "question": "If the child (a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers) walks away from the adults they came with in this video, at what second does it happen? Answer with the number of seconds only, or \"none\"",
+              "answer": "none",
+              "in_replay": true
+            }
+          ]
+        },
+        {
+          "file": "A5_6ef43415",
+          "clip": "A5",
+          "answers": [
+            {
+              "question": "Are these adults visible in this video: a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf? Start your answer with \"yes\" or \"no\", then give one short reason",
+              "answer": "no, the specific adults described are not present in the video.",
+              "in_replay": true
+            },
+            {
+              "question": "Look for this child: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers_ Start your answer with exactly one of: \"with these adults\" (the child is together with a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf), \"alone\" (the child has no adult with them at the end of the video), \"with other adults\", or \"not present\"_ Then give one short reason",
+              "answer": "alone, the child is standing in the middle of the food court area without any accompanying adults at the end of the video.",
+              "in_replay": true
+            },
+            {
+              "question": "If the child (a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers) walks away from the adults they came with in this video, at what second does it happen? Answer with the number of seconds only, or \"none\"",
+              "answer": "none",
+              "in_replay": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": "18 of 18 answers for the current clips are identical to the replay."
+}
