@@ -1,11 +1,12 @@
 // Small CreativAI REST client. Reads the key from CREATIVAI_API_KEY and never prints it.
 const BASE = "https://ws.creativai-apis.com/api/v2";
 const KEY = process.env.CREATIVAI_API_KEY;
-if (!KEY) throw new Error("CREATIVAI_API_KEY is not set");
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function api(method, path, body, { retries = 5 } = {}) {
+  // Checked here, not at load time, so cached runs work without a key.
+  if (!KEY) throw new Error("CREATIVAI_API_KEY is not set (needed only for answers that aren't cached yet)");
   for (let attempt = 0; ; attempt++) {
     try {
       const res = await fetch(BASE + path, {

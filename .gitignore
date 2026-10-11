@@ -1,1 +1,4 @@
 __pycache__/
+
+# Generated clips (~130 MB). Not committed for now; see README step 3/4.
+demo/raw/

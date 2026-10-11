@@ -280,3 +280,9 @@ No free dataset contains a "lost child" story, so:
   3. Indexing 6 × 15 s took ~3 min.
   4. Image queries need a `multimodal` collection (ours is `video_only`).
 - **Search ranking is weak on these clips:** scores are rank-fusion values (~0.030–0.033) that barely differ, and the default `min_score` hides everything (pass `min_score: 0`). Q1 (family arriving): A1 #2. Q3 (separation): A3 #2. Q4 (boy alone): A4 #5, A5 #4, so it fails top-3. Search alone can't be the Eyes; it can only narrow down by camera tag, and yes/no questions per clip need data plates or agentic chat.
+
+### Session 2026-10-11 (end): the agent, the case console and the README — shipped
+- **Built:** `graph.js` (the Map), `eyes.js` (CreativAI data plates + questions, cached), `find-child.js` (the agent), `server.js` + `case.html` (the case console), `package.json` scripts, and a portfolio **README** with the use case, how it works, results, limits and a tutorial.
+- **Case A solved end to end:** separation STR-B 14:19:04, child now FC-02, lookalike family ruled out; A4 wrongly ruled out (wide atrium shot). First run ~3 min / ~27 CreativAI credits; reruns are free from the cache, and need no key.
+- **Decision (user): the case B blind test is dropped.** B1–B6 exist locally but were never uploaded or run; the README says so.
+- **Not committed:** the 14 clips in `demo/raw/` (gitignored), pending the user's choice of whether to publish them.

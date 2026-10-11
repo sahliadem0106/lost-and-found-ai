@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lost &amp; Found Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Security control-room console, same look as camera-network.html. Map left, report + agent log right, evidence below. */
+:root {
+  color-scheme: dark;
+  --bg: #0d171b; --panel: #13222a; --line: #27404a; --fg: #d8e5e8; --muted: #8ba3aa;
+  --family: #5ec4dc; --child: #f2a541; --alert: #e5605a; --ok: #6fcf8f; --zone: #172b33;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; line-height: 1.5; padding: 20px 16px 40px; }
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 20px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: 34px; letter-spacing: .04em; text-transform: uppercase; margin: 0; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 19px; letter-spacing: .08em; text-transform: uppercase; margin: 0; color: var(--muted); }
+.sub { color: var(--muted); margin: 4px 0 0; max-width: 75ch; }
+.main { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.evidence { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+@media (max-width: 900px) { .main, .evidence { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+svg { width: 100%; height: auto; display: block; }
+label { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); }
+textarea, input { font: 14px var(--body); color: var(--fg); background: var(--zone); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; width: 100%; }
+textarea { resize: vertical; min-height: 64px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.row label { flex: 0 0 120px; }
+button { font: 600 13px var(--body); color: var(--fg); background: var(--zone); border: 1px solid var(--line); border-radius: 4px; padding: 8px 14px; cursor: pointer; }
+button.primary { background: var(--child); color: var(--bg); border-color: var(--child); }
+button:hover { border-color: var(--muted); }
+button:disabled { opacity: .5; cursor: progress; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--child); outline-offset: 2px; }
+pre#log { margin: 0; background: #0a1215; border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; font: 12px/1.55 var(--mono); color: var(--muted); max-height: 360px; overflow: auto; white-space: pre-wrap; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 12.5px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.alert { border: 1px solid var(--alert); background: color-mix(in srgb, var(--alert) 12%, var(--panel)); border-radius: 6px; padding: 14px 16px; font-size: 15px; }
+.alert strong { font-family: var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--alert); margin-right: 8px; }
+.card h3 { font-family: var(--display); font-size: 22px; font-weight: 600; margin: 0; }
+.card .meta { font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
+video { width: 100%; border-radius: 4px; background: #000; aspect-ratio: 16 / 9; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-family: var(--mono); font-size: 12.5px; }
+.steps li { display: grid; grid-template-columns: 78px 64px minmax(0, 1fr); gap: 8px; padding: 6px 8px; background: var(--zone); border-radius: 3px; }
+.steps .fam { color: var(--family); } .steps .kid { color: var(--child); } .steps .sep { color: var(--alert); } .steps .rej { color: var(--muted); text-decoration: line-through; }
+.empty { color: var(--muted); font-style: italic; }
+/* SVG */
+.zone { fill: var(--zone); stroke: var(--line); stroke-width: 1.5; }
+.zlabel { fill: var(--muted); font: 600 15px var(--display); letter-spacing: .1em; text-transform: uppercase; }
+.edge { stroke: var(--line); stroke-width: 2.5; stroke-dasharray: 6 5; }
+.dist { fill: var(--muted); font: 500 11px var(--mono); }
+.cam { fill: var(--panel); stroke: var(--muted); stroke-width: 2; }
+.cam.has { stroke: var(--fg); }
+.cam.seen { fill: var(--family); stroke: var(--family); }
+.cam.rej { stroke: var(--muted); stroke-dasharray: 3 3; }
+.camid { fill: var(--fg); font: 500 12px var(--mono); }
+.fampath { fill: none; stroke: var(--family); stroke-width: 4; opacity: .9; stroke-linejoin: round; }
+.kidpath { fill: none; stroke: var(--child); stroke-width: 4; stroke-dasharray: 2 8; stroke-linecap: round; stroke-linejoin: round; }
+.sepring { fill: none; stroke: var(--alert); stroke-width: 4; }
+.now { fill: var(--child); }
+.pulse { fill: none; stroke: var(--child); stroke-width: 3; animation: pulse 1.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.pin { font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; }
+@keyframes pulse { from { opacity: .9; transform: scale(.6); } to { opacity: 0; transform: scale(2.2); } }
+@media (prefers-reduced-motion: reduce) { .pulse { animation: none; opacity: .6; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Lost &amp; Found · Case console</h1>
+    <p class="sub">A guard describes the missing child and the family. The agent follows the family camera by camera, using walking times on the camera map to decide where to look, and asks CreativAI about only that footage. It finds where the child was separated and where the child is now.</p>
+  </header>
+
+  <div class="main">
+    <div style="display:grid;gap:20px;min-width:0">
+    <section class="panel" aria-label="Mall map">
+      <h2>Al-Noor Mall · ground floor</h2>
+      <svg id="plan" viewBox="0 0 1040 640" role="img" aria-label="Floor plan with cameras, walkways and the agent's findings"></svg>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--family)"></i>Family's path</span>
+        <span><i class="sw" style="background:var(--child)"></i>Child's path / child now</span>
+        <span><i class="sw" style="border:3px solid var(--alert)"></i>Separation</span>
+        <span><i class="sw" style="border:2px solid var(--fg)"></i>Camera with footage</span>
+        <span><i class="sw" style="border:2px dashed var(--muted)"></i>Checked and ruled out</span>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Every sighting the agent used</h2>
+      <ul id="steps" class="steps"><li class="empty" style="display:block">No result yet.</li></ul>
+    </section>
+    </div>
+
+    <section class="panel" aria-label="Report and agent">
+      <h2>Guard's report</h2>
+      <form id="report" class="panel" style="padding:0;border:0;background:none">
+        <label>Missing child<textarea name="child" required></textarea></label>
+        <label>Came with<textarea name="family" required></textarea></label>
+        <div class="row">
+          <label>Arrived around<input name="arrived" required pattern="\d{1,2}:\d{2}" placeholder="14:00"></label>
+          <button class="primary" id="run" type="submit">Find the child</button>
+          <button id="last" type="button">Show last result</button>
+        </div>
+      </form>
+      <h2>Agent log</h2>
+      <pre id="log" aria-live="polite">Press "Find the child" to run the agent, or "Show last result" to load the saved run.</pre>
+    </section>
+  </div>
+
+  <div id="alert" class="alert" hidden></div>
+
+  <div class="evidence">
+    <section class="panel card">
+      <h2>Separation</h2>
+      <div id="sep" class="empty">No result yet.</div>
+    </section>
+    <section class="panel card">
+      <h2>Child now</h2>
+      <div id="now" class="empty">No result yet.</div>
+    </section>
+  </div>
+
+</div>
+
+<script>
+const SAMPLE = {
+  child: "a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers",
+  family: "a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf",
+  arrived: "14:00",
+};
+const CASE = "A";
+const S = 10, O = 20; // px per metre, margin
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("plan");
+const el = (tag, attrs, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+const $ = id => document.getElementById(id);
+let topo, clips, cam = {}, camEls = {}, overlay;
+
+const form = $("report");
+for (const k in SAMPLE) form.elements[k].value = SAMPLE[k];
+
+// ---------- the map ----------
+function drawMap() {
+  [["Fashion House",12,2,26,22],["TechZone",40,2,20,22],["ToyLand",62,2,26,22],["Main corridor",2,28,96,10],["Food court",2,40,36,18],["Entrance",42,40,16,18],["Info · Security",62,40,14,14],["Restrooms",80,40,12,18]]
+    .forEach(([n,x,y,w,h]) => { el("rect",{class:"zone",x:O+x*S,y:O+y*S,width:w*S,height:h*S,rx:4}); el("text",{class:"zlabel",x:O+x*S+10,y:O+y*S+22}).textContent = n; });
+  el("circle",{class:"zone",cx:O+50*S,cy:O+33*S,r:70});
+  for (const c of topo.cameras) cam[c.id] = { ...c, x: O + c.pos[0] * S, y: O + c.pos[1] * S };
+  for (const e of topo.edges) {
+    const A = cam[e.a], B = cam[e.b];
+    el("line",{class:"edge",x1:A.x,y1:A.y,x2:B.x,y2:B.y});
+    el("text",{class:"dist",x:(A.x+B.x)/2+6,y:(A.y+B.y)/2-6}).textContent = e.dist_m + " m";
+  }
+  overlay = el("g", {});
+  const withFootage = new Set(clips.map(c => c.camera));
+  for (const c of Object.values(cam)) {
+    camEls[c.id] = el("circle",{class:"cam" + (withFootage.has(c.id) ? " has" : ""),cx:c.x,cy:c.y,r:9});
+    el("text",{class:"camid",x:c.x+13,y:c.y+18}).textContent = c.id;
+  }
+}
+
+// Shortest walking route between two cameras (Dijkstra on the walkway graph).
+function route(a, b) {
+  const dist = { [a]: 0 }, prev = {}, todo = new Set(Object.keys(cam));
+  while (todo.size) {
+    const u = [...todo].reduce((m, k) => (dist[k] ?? Infinity) < (dist[m] ?? Infinity) ? k : m);
+    todo.delete(u);
+    if (u === b || dist[u] === undefined) break;
+    for (const e of topo.edges) {
+      const v = e.a === u ? e.b : e.b === u ? e.a : null;
+      if (v && todo.has(v) && dist[u] + e.dist_m < (dist[v] ?? Infinity)) { dist[v] = dist[u] + e.dist_m; prev[v] = u; }
+    }
+  }
+  const out = [b]; while (out[0] !== a && prev[out[0]]) out.unshift(prev[out[0]]);
+  return out;
+}
+const pts = ids => { let r = [ids[0]]; for (let i = 1; i < ids.length; i++) r = r.concat(route(ids[i - 1], ids[i]).slice(1)); return r.map(id => `${cam[id].x},${cam[id].y}`).join(" "); };
+
+function drawResult(res) {
+  overlay.replaceChildren();
+  Object.values(camEls).forEach(e => e.classList.remove("seen", "rej"));
+  const fam = (res.family_path || []).map(f => f.camera);
+  if (fam.length) {
+    el("polyline", { class: "fampath", points: pts(fam) }, overlay);
+    fam.forEach(c => camEls[c].classList.add("seen"));
+  }
+  (res.rejected || []).forEach(r => camEls[r.camera].classList.add("rej"));
+  if (res.separation) {
+    const kid = [res.separation.camera, ...(res.child_path || []).map(c => c.camera)];
+    if (kid.length > 1) el("polyline", { class: "kidpath", points: pts(kid) }, overlay);
+    const s = cam[res.separation.camera];
+    el("circle", { class: "sepring", cx: s.x, cy: s.y, r: 18 }, overlay);
+    const t = el("text", { class: "pin", x: s.x + 24, y: s.y - 24, fill: "var(--alert)" }, overlay);
+    t.textContent = "Separated " + res.separation.time;
+  }
+  if (res.child_now) {
+    const n = cam[res.child_now.camera];
+    el("circle", { class: "pulse", cx: n.x, cy: n.y, r: 16 }, overlay);
+    el("circle", { class: "now", cx: n.x, cy: n.y, r: 10 }, overlay);
+    const t = el("text", { class: "pin", x: n.x - 30, y: n.y + 48, fill: "var(--child)" }, overlay);
+    t.textContent = "Child now " + res.child_now.last_seen;
+  }
+}
+
+// ---------- evidence ----------
+const clipUrl = id => "/" + clips.find(c => c.id === id).file.replace(/^demo\//, "");
+function videoCard(target, title, meta, clipId, atSec) {
+  target.className = "";
+  target.innerHTML = `<h3></h3><div class="meta"></div><video controls muted playsinline preload="metadata"></video>`;
+  target.querySelector("h3").textContent = title;
+  target.querySelector(".meta").textContent = meta;
+  const v = target.querySelector("video");
+  v.src = clipUrl(clipId);
+  v.addEventListener("loadedmetadata", () => { v.currentTime = Math.max(0, atSec - 1); }, { once: true });
+}
+
+function showResult(res) {
+  drawResult(res);
+  const a = $("alert");
+  a.hidden = !res.alert;
+  if (res.alert) { a.innerHTML = "<strong>Alert sent</strong>"; a.append(res.alert.replace(/^LOST CHILD:\s*/, "")); }
+  const name = id => `${cam[id].name} (${id})`;
+  if (res.separation) {
+    const clip = clips.find(c => c.id === res.separation.clip);
+    const off = (t => { const [h, m, s] = t.split(":").map(Number); return h * 3600 + m * 60 + s; });
+    videoCard($("sep"), name(res.separation.camera), `${res.separation.time} · clip ${clip.id} · ${off(res.separation.time) - off(clip.start)} s in`, clip.id, off(res.separation.time) - off(clip.start));
+  }
+  if (res.child_now) videoCard($("now"), name(res.child_now.camera), `last seen alone ${res.child_now.last_seen} · clip ${res.child_now.clip}`, res.child_now.clip, 0);
+  const li = (cls, time, camId, text) => { const e = document.createElement("li"); e.className = cls; e.innerHTML = "<span></span><span></span><span></span>"; [time, camId, text].forEach((t, i) => (e.children[i].textContent = t)); return e; };
+  const steps = [];
+  for (const f of (res.family_path || []).filter(f => f.id !== res.separation?.clip)) steps.push([f.time, li("fam", f.time, f.camera, `${f.id}: family seen, child ${f.child.replace("_", " ")}`)]);
+  if (res.separation) steps.push([res.separation.time, li("sep", res.separation.time, res.separation.camera, `${res.separation.clip}: child walks away from the adults`)]);
+  for (const c of res.child_path || []) steps.push([c.time, li("kid", c.time, c.camera, `${c.id}: child seen alone`)]);
+  for (const r of res.rejected || []) steps.push([r.time, li("rej", r.time, r.camera, `${r.id}: ruled out, ${r.why}`)]);
+  $("steps").replaceChildren(...steps.sort((x, y) => x[0].localeCompare(y[0])).map(s => s[1]));
+}
+
+// ---------- actions ----------
+async function loadLast() {
+  const r = await fetch(`/api/result?case=${CASE}`);
+  if (!r.ok) { $("log").textContent = "No saved result yet. Run the agent first."; return; }
+  const res = await r.json();
+  $("log").textContent = (res.log || []).join("\n");
+  showResult(res);
+}
+
+form.addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const body = Object.fromEntries(new FormData(form));
+  body.case = CASE;
+  $("run").disabled = true;
+  $("log").textContent = "";
+  try {
+    const r = await fetch("/api/find", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const reader = r.body.getReader(), dec = new TextDecoder();
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      $("log").textContent += dec.decode(value, { stream: true });
+      $("log").scrollTop = $("log").scrollHeight;
+    }
+    const res = await (await fetch(`/api/result?case=${CASE}`)).json();
+    showResult(res);
+  } catch (e) {
+    $("log").textContent += "\nCould not reach the agent: " + e.message;
+  } finally {
+    $("run").disabled = false;
+  }
+});
+$("last").addEventListener("click", loadLast);
+
+(async () => {
+  [topo, clips] = await Promise.all([fetch("/api/topology").then(r => r.json()), fetch(`/api/clips?case=${CASE}`).then(r => r.json()).then(m => m.clips)]);
+  drawMap();
+  if (new URLSearchParams(location.search).get("show") === "last") loadLast();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "lost-and-found",
+  "version": "1.0.0",
+  "description": "Finds a lost child in a mall from a guard's description: a camera graph decides where to look, CreativAI looks.",
+  "private": true,
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node demo/server.js",
+    "find:a": "node demo/pipeline/find-child.js --case A --child \"a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers\" --family \"a man in a long white robe (thobe) with a red-and-white checkered headscarf (shemagh) carrying a dark green shopping bag, and a woman in a long black cloak (abaya) with a light grey headscarf\" --arrived 14:00",
+    "ingest:a": "node demo/pipeline/ingest.js demo/pipeline/clips-case-A.json --index",
+    "graph": "node demo/pipeline/graph.js"
+  }
+}
