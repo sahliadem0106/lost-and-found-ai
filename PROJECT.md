@@ -286,3 +286,9 @@ No free dataset contains a "lost child" story, so:
 - **Case A solved end to end:** separation STR-B 14:19:04, child now FC-02, lookalike family ruled out; A4 wrongly ruled out (wide atrium shot). First run ~3 min / ~27 CreativAI credits; reruns are free from the cache, and need no key.
 - **Decision (user): the case B blind test is dropped.** B1–B6 exist locally but were never uploaded or run; the README says so.
 - **Not committed:** the 14 clips in `demo/raw/` (gitignored), pending the user's choice of whether to publish them.
+
+### Session 2026-10-11 (late): A4 and A5 remade, all answers correct
+- The user found generation errors: A4 had two boys in red (CreativAI matched one to adults), A5 had a person sprawled on a counter. Remade both with Kling O3 ($2.14) using stricter prompts and camera placements that match the map (`demo/prompts/07-remakes.md`); ATR-01 and FC-02 placements updated in `mall_topology.json` (distances unchanged).
+- Swapped in with the new `replace-clip.js` (removes old media from CreativAI, clears cached answers) + `ingest.js --index` (3.3 credits). Agent rerun: 10.8 credits, 148 s.
+- **Result: every sighting correct.** Family ENT-01 → STR-A → STR-B, separation STR-B 14:19:04, child STR-B → ATR-01 → FC-02, lookalike A6 ruled out.
+- Higgsfield total so far: about $16.89. Old clips kept locally as `A4_v1.mp4`, `A5_v1.mp4`.

@@ -6,7 +6,7 @@
 
 [![The replay at the Map step: reachable cameras light up with their time windows, and the clips sent to CreativAI are ringed in purple](docs/replay.png)](https://sahliadem0106.github.io/newnew/)
 
-The replay walks through a real run in 21 animated steps. You see the guard's report typed in, the Map lighting up the cameras a person could reach and when, CreativAI watching each clip and its answers word for word, the path drawing itself across the mall, the separation moment in the video, the lookalike family being ruled out, and the final alert. It runs in the browser with nothing to install. To run it locally, use `npm start` and open http://localhost:3000/replay.html.
+The replay walks through a real run in 24 animated steps. You see the guard's report typed in, the Map lighting up the cameras a person could reach and when, CreativAI watching each clip and its answers word for word, the path drawing itself across the mall, the separation moment in the video, the lookalike family being ruled out, and the final alert. It runs in the browser with nothing to install. To run it locally, use `npm start` and open http://localhost:3000/replay.html.
 
 It combines two things:
 
@@ -98,14 +98,14 @@ Case A is a family of three arriving at 14:02. The boy (6, red t-shirt) leaves h
 | **Separation** | **TechZone (STR-B), 14:19:04** | STR-B; the boy walks off ~4 s into clip A3 | ✅ |
 | **Child now** | **Food court counters (FC-02), alone** | FC-02 | ✅ |
 | Lookalike family (A6) | ruled out: boy with adults | trick clip | ✅ |
-| Atrium sighting (A4) | ruled out | clip is flawed: two boys in red were generated | ⚠️ |
+| Child's path | STR-B → ATR-01 → FC-02, alone at each | STR-B → ATR-01 → FC-02 | ✅ |
 
-**First run:** about 3 minutes and about 27 CreativAI credits. CreativAI was asked about 6 clips in 4 rounds. **Every rerun:** under 1 second and 0 credits, thanks to the cache.
+**Every answer is correct.** A full first run takes about 3 minutes and about 27 CreativAI credits (6 clips, 4 rounds of questions). After two clips were remade (see below), only those two were asked about again: 2.5 minutes and 10.8 credits. **Every rerun:** under 1 second and 0 credits, thanks to the cache.
 
 ### Honest limits
 
 - **The footage is AI-generated** (Kling via the Higgsfield API), not real CCTV. The clips don't always follow their script either: in A3 the boy leaves at about 4 s, not at the planned 9–13 s, and CreativAI correctly reported 4 s.
-- **Clip A4 is flawed:** the video generator put two boys in matching red outfits in a wide atrium shot. CreativAI matched one of them to nearby adults and said the boy was with his family, so the agent ruled the clip out. The final answer is still right, but the child's path skips the atrium.
+- **Two clips had to be remade.** The first A4 had a second, generated boy in a matching red outfit in a tiny-figure dome shot; CreativAI matched him to nearby adults and the agent wrongly ruled the atrium out. The first A5 had a person sprawled on a counter. Both were regenerated with stricter prompts and camera placements that match the map (`demo/prompts/07-remakes.md`) and swapped in with `replace-clip.js`. With the new clips, every answer is correct. The old versions are kept locally as `_v1`.
 - **The time-order rule was added after seeing case A's answers.** A blind test on case B (clips generated but never run) was planned to check that the system generalises, and was **not run**. So these results show the method working on one case, not proof that it works in general.
 - **Search alone isn't enough.** CreativAI splits video into 16 s chunks, so a 15 s clip is one search hit with no timing, and similarity scores barely differ between similar mall scenes. That's why the Eyes use data-plate questions, not search ranking.
 
@@ -166,6 +166,8 @@ If you change the descriptions, the questions change too, so the agent asks Crea
    Every clip is tagged `camera:<id>` and `clip:<id>`, with `camera`, `start_time` and `start_sec` metadata. Progress is saved to `state-<collection>.json`, so a rerun resumes where it stopped. Indexing six 15 s clips cost about 10 credits.
 4. **Run the agent** with `--case X`, and the console with `npm start`. Set `CASE` at the top of the script in `case.html` and `replay.html` to switch cases, and put web copies of the clips in `demo/media/case-X/<id>.mp4` plus a `<id>.jpg` poster (for example: `ffmpeg -i A1.mp4 -vf scale=-2:720 -crf 27 -an -movflags +faststart A1.mp4`).
 
+To **replace a clip** (for example after regenerating it), put the new file in place and run `node demo/pipeline/replace-clip.js demo/pipeline/clips-case-X.json A4`, then `ingest.js … --index` again and rerun the agent. Only the replaced clip is asked about again.
+
 Optional: try raw search with `node demo/pipeline/search.js demo/pipeline/state-<collection>.json "a boy in a red t-shirt" camera:fc-02`.
 
 ### 4. (Optional) Generate demo footage
@@ -187,6 +189,7 @@ Total for 7 character sheets and 14 clips: **about $15**.
 | `demo/pipeline/eyes.js` | The Eyes: CreativAI data plates + questions, with a cache |
 | `demo/pipeline/find-child.js` | The agent: report → entry → family → separation → child → alert |
 | `demo/pipeline/ingest.js`, `search.js`, `creativai.js` | Upload/index footage, raw search, small REST client |
+| `demo/pipeline/replace-clip.js` | Swap a clip for a new version: removes the old one from CreativAI and forgets its cached answers |
 | `demo/pipeline/clips-case-A.json`, `state-*.json`, `cache-*.json` | Case A footage list, CreativAI IDs, cached answers |
 | `demo/replay.html`, `index.html` | The animated step-by-step replay (`index.html` sends GitHub Pages visitors to it) |
 | `demo/server.js`, `demo/case.html` | The case console |

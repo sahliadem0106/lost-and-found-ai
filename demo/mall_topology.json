@@ -30,7 +30,7 @@
       ],
       "facing_deg": 90,
       "fov_deg": 110,
-      "mount": "ceiling dome, centre of atrium"
+      "mount": "north wall 4 m above the TechZone entrance, angled ~35° down, looking south across the atrium: fountain in the middle, west corridor opening on the right of the frame, east corridor on the left, main entrance in the background"
     },
     {
       "id": "COR-W",
@@ -112,9 +112,9 @@
         12,
         45
       ],
-      "facing_deg": 0,
+      "facing_deg": 180,
       "fov_deg": 90,
-      "mount": "wall 3.5 m, facing restaurant counters and queue"
+      "mount": "wall 3.5 m at the edge of the seating area, angled ~35° down, looking west at the row of restaurant counters and their queues; people arriving from FC-01 enter from the bottom right"
     },
     {
       "id": "INF-01",

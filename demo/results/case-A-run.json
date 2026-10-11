@@ -53,18 +53,17 @@
   },
   "child_path": [
     {
+      "id": "A4",
+      "camera": "ATR-01",
+      "time": "14:19:50"
+    },
+    {
       "id": "A5",
       "camera": "FC-02",
       "time": "14:22:50"
     }
   ],
   "rejected": [
-    {
-      "id": "A4",
-      "camera": "ATR-01",
-      "time": "14:19:50",
-      "why": "a child matching the description, but with adults, not alone"
-    },
     {
       "id": "A6",
       "camera": "FC-01",
@@ -78,9 +77,9 @@
     "last_seen": "14:23:05",
     "clip": "A5"
   },
-  "alert": "LOST CHILD: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers. Separated from parents at TechZone (electronics) (STR-B) around 14:19:04. Path: STR-B → FC-02. Last seen ALONE at Food court counters (FC-02) at 14:23:05. Nearest guard: go there now. Proof: clip A5.",
-  "creativai_credits": 0,
-  "seconds": 0,
+  "alert": "LOST CHILD: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers. Separated from parents at TechZone (electronics) (STR-B) around 14:19:04. Path: STR-B → ATR-01 → FC-02. Last seen ALONE at Food court counters (FC-02) at 14:23:05. Nearest guard: go there now. Proof: clip A5.",
+  "creativai_credits": 10.8,
+  "seconds": 148,
   "log": [
     "CASE A: lost child report",
     "  child : a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers",
@@ -93,22 +92,27 @@
     "    A2 STR-A  family: yes  child: with_family leaves at: -",
     "  ✔ next sighting: A2 @ STR-A (Fashion House (clothing)) 14:08:00 (walk 68 m at 0.2 m/s, plausible)",
     "  from A2 @ STR-A (Fashion House (clothing)) 14:08:00 → Map allows 9 camera windows; footage there: A3, A4, A5, A6",
+    "    [CreativAI] asking 3 question(s) about A4, A5 ...",
+    "    [CreativAI] done (10.8 credits)",
     "    A3 STR-B  family: no   child: alone       leaves at: 4",
-    "    A4 ATR-01 family: yes  child: with_family leaves at: 11",
+    "    A4 ATR-01 family: no   child: alone       leaves at: -",
     "    A5 FC-02  family: no   child: alone       leaves at: -",
     "    A6 FC-01  family: no   child: with_others leaves at: 10",
     "  ✔ A3: the child walks away from the adults 4 s into the clip",
     "\n③ SEPARATION: STR-B (TechZone (electronics)) at 14:19:04, clip A3\n",
     "④ FOLLOW THE CHILD (child walking speeds, up to 4 hops, from STR-B 14:19:04)",
     "  from STR-B 14:19:04 → footage on the child's possible path: A4, A5, A6",
-    "    A4 ATR-01 child: with_family family: yes",
+    "    A4 ATR-01 child: alone       family: no",
     "    A5 FC-02  child: alone       family: no",
     "    A6 FC-01  child: with_others family: no",
-    "  ✔ child alone: A5 @ FC-02 (Food court counters) 14:22:50 (75 m via STR-B → ATR-01 → COR-W → FC-01 → FC-02, 0.33 m/s)",
+    "  ✔ child alone: A4 @ ATR-01 (Central atrium) 14:19:50 (20 m via STR-B → ATR-01, 0.43 m/s)",
+    "  from ATR-01 14:20:05 → footage on the child's possible path: A5",
+    "    A5 FC-02  child: alone       family: no",
+    "  ✔ child alone: A5 @ FC-02 (Food court counters) 14:22:50 (55 m via ATR-01 → COR-W → FC-01 → FC-02, 0.33 m/s)",
     "  from FC-02 14:23:05 → footage on the child's possible path: none",
     "\n⑤ CHILD NOW: last seen alone at FC-02 (Food court counters), 14:23:05, clip A5",
-    "\nALERT → LOST CHILD: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers. Separated from parents at TechZone (electronics) (STR-B) around 14:19:04. Path: STR-B → FC-02. Last seen ALONE at Food court counters (FC-02) at 14:23:05. Nearest guard: go there now. Proof: clip A5.",
-    "Ignored: A4 (a child matching the description, but with adults, not alone); A6 (a child matching the description, but with adults, not alone)"
+    "\nALERT → LOST CHILD: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers. Separated from parents at TechZone (electronics) (STR-B) around 14:19:04. Path: STR-B → ATR-01 → FC-02. Last seen ALONE at Food court counters (FC-02) at 14:23:05. Nearest guard: go there now. Proof: clip A5.",
+    "Ignored: A6 (a child matching the description, but with adults, not alone)"
   ],
   "trace": [
     {
@@ -521,13 +525,13 @@
           "id": "A4",
           "camera": "ATR-01",
           "time": "14:19:50",
-          "family": true,
-          "child": "with_family",
-          "leaves": 11,
+          "family": false,
+          "child": "alone",
+          "leaves": null,
           "why": {
-            "family": "yes. They are walking together on the ground floor of the mall, approaching the fountain from the right.",
-            "child": "with these adults. The child is seen walking alongside these adults starting at 00:08 and remains with them as they approach the fountain.",
-            "leaves": "11"
+            "family": "no, the specified adults with those unique clothing items and accessories are not visible in the video.",
+            "child": "alone, the child is shown walking independently without any adults throughout the entire clip.",
+            "leaves": "none"
           }
         },
         {
@@ -538,8 +542,8 @@
           "child": "alone",
           "leaves": null,
           "why": {
-            "family": "no. They are not present in the video.",
-            "child": "alone",
+            "family": "no, the specific adults described are not present in the video.",
+            "child": "alone, the child is standing in the middle of the food court area without any accompanying adults at the end of the video.",
             "leaves": "none"
           }
         },
@@ -749,13 +753,13 @@
           "id": "A4",
           "camera": "ATR-01",
           "time": "14:19:50",
-          "family": true,
-          "child": "with_family",
-          "leaves": 11,
+          "family": false,
+          "child": "alone",
+          "leaves": null,
           "why": {
-            "family": "yes. They are walking together on the ground floor of the mall, approaching the fountain from the right.",
-            "child": "with these adults. The child is seen walking alongside these adults starting at 00:08 and remains with them as they approach the fountain.",
-            "leaves": "11"
+            "family": "no, the specified adults with those unique clothing items and accessories are not visible in the video.",
+            "child": "alone, the child is shown walking independently without any adults throughout the entire clip.",
+            "leaves": "none"
           }
         },
         {
@@ -766,8 +770,8 @@
           "child": "alone",
           "leaves": null,
           "why": {
-            "family": "no. They are not present in the video.",
-            "child": "alone",
+            "family": "no, the specific adults described are not present in the video.",
+            "child": "alone, the child is standing in the middle of the food court area without any accompanying adults at the end of the video.",
             "leaves": "none"
           }
         },
@@ -790,19 +794,195 @@
       "type": "decision",
       "phase": "child",
       "kind": "reject",
-      "clip": "A4",
-      "camera": "ATR-01",
-      "time": "14:19:50",
+      "clip": "A6",
+      "camera": "FC-01",
+      "time": "14:24:00",
       "text": "a child matching the description, but with adults, not alone"
     },
     {
       "type": "decision",
       "phase": "child",
-      "kind": "reject",
-      "clip": "A6",
-      "camera": "FC-01",
-      "time": "14:24:00",
-      "text": "a child matching the description, but with adults, not alone"
+      "kind": "child_alone",
+      "clip": "A4",
+      "camera": "ATR-01",
+      "time": "14:19:50",
+      "walk": {
+        "ok": true,
+        "speed": 0.43,
+        "score": 1,
+        "dist_m": 20,
+        "via": [
+          "STR-B",
+          "ATR-01"
+        ]
+      }
+    },
+    {
+      "type": "map",
+      "phase": "child",
+      "who": "child",
+      "from": {
+        "camera": "ATR-01",
+        "time": "14:20:05",
+        "clip": "A4"
+      },
+      "windows": [
+        {
+          "camera": "ENT-01",
+          "hops": 1,
+          "via": [
+            "ATR-01",
+            "ENT-01"
+          ],
+          "from": "14:20:21",
+          "to": "14:25:08"
+        },
+        {
+          "camera": "COR-W",
+          "hops": 1,
+          "via": [
+            "ATR-01",
+            "COR-W"
+          ],
+          "from": "14:20:21",
+          "to": "14:25:08"
+        },
+        {
+          "camera": "COR-E",
+          "hops": 1,
+          "via": [
+            "ATR-01",
+            "COR-E"
+          ],
+          "from": "14:20:21",
+          "to": "14:25:08"
+        },
+        {
+          "camera": "STR-B",
+          "hops": 1,
+          "via": [
+            "ATR-01",
+            "STR-B"
+          ],
+          "from": "14:20:18",
+          "to": "14:24:55"
+        },
+        {
+          "camera": "INF-01",
+          "hops": 1,
+          "via": [
+            "ATR-01",
+            "INF-01"
+          ],
+          "from": "14:20:19",
+          "to": "14:25:00"
+        },
+        {
+          "camera": "STR-A",
+          "hops": 2,
+          "via": [
+            "ATR-01",
+            "COR-W",
+            "STR-A"
+          ],
+          "from": "14:20:32",
+          "to": "14:25:53"
+        },
+        {
+          "camera": "FC-01",
+          "hops": 2,
+          "via": [
+            "ATR-01",
+            "COR-W",
+            "FC-01"
+          ],
+          "from": "14:20:32",
+          "to": "14:25:53"
+        },
+        {
+          "camera": "STR-C",
+          "hops": 2,
+          "via": [
+            "ATR-01",
+            "COR-E",
+            "STR-C"
+          ],
+          "from": "14:20:32",
+          "to": "14:25:53"
+        },
+        {
+          "camera": "WC-01",
+          "hops": 2,
+          "via": [
+            "ATR-01",
+            "COR-E",
+            "WC-01"
+          ],
+          "from": "14:20:32",
+          "to": "14:25:53"
+        },
+        {
+          "camera": "ENT-02",
+          "hops": 2,
+          "via": [
+            "ATR-01",
+            "COR-E",
+            "ENT-02"
+          ],
+          "from": "14:20:32",
+          "to": "14:25:53"
+        },
+        {
+          "camera": "FC-02",
+          "hops": 3,
+          "via": [
+            "ATR-01",
+            "COR-W",
+            "FC-01",
+            "FC-02"
+          ],
+          "from": "14:20:39",
+          "to": "14:26:23"
+        },
+        {
+          "camera": "ATR-01",
+          "hops": 0,
+          "via": [
+            "ATR-01"
+          ],
+          "from": "14:20:05",
+          "to": "14:24:05"
+        }
+      ],
+      "candidates": [
+        "A5"
+      ]
+    },
+    {
+      "type": "ask",
+      "phase": "child",
+      "clips": [
+        "A5"
+      ]
+    },
+    {
+      "type": "answers",
+      "phase": "child",
+      "results": [
+        {
+          "id": "A5",
+          "camera": "FC-02",
+          "time": "14:22:50",
+          "family": false,
+          "child": "alone",
+          "leaves": null,
+          "why": {
+            "family": "no, the specific adults described are not present in the video.",
+            "child": "alone, the child is standing in the middle of the food court area without any accompanying adults at the end of the video.",
+            "leaves": "none"
+          }
+        }
+      ]
     },
     {
       "type": "decision",
@@ -815,9 +995,8 @@
         "ok": true,
         "speed": 0.33,
         "score": 1,
-        "dist_m": 75,
+        "dist_m": 55,
         "via": [
-          "STR-B",
           "ATR-01",
           "COR-W",
           "FC-01",
@@ -946,7 +1125,7 @@
     },
     {
       "type": "alert",
-      "text": "LOST CHILD: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers. Separated from parents at TechZone (electronics) (STR-B) around 14:19:04. Path: STR-B → FC-02. Last seen ALONE at Food court counters (FC-02) at 14:23:05. Nearest guard: go there now. Proof: clip A5.",
+      "text": "LOST CHILD: a small boy of about 6 in a bright red t-shirt, blue jeans and white sneakers. Separated from parents at TechZone (electronics) (STR-B) around 14:19:04. Path: STR-B → ATR-01 → FC-02. Last seen ALONE at Food court counters (FC-02) at 14:23:05. Nearest guard: go there now. Proof: clip A5.",
       "child_now": {
         "camera": "FC-02",
         "name": "Food court counters",
